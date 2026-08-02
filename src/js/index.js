@@ -7,6 +7,7 @@ import {
   scegliPercorsoSalvataggio,
 } from "./api.js";
 import { controllaAggiornamenti } from "./aggiornamenti.js";
+import { aggiornaTitoloFinestra, getVersioneApp } from "./versione.js";
 
 const listaRecenti = document.querySelector("#lista-recenti");
 const recentiVuoti = document.querySelector("#recenti-vuoti");
@@ -140,5 +141,13 @@ document.querySelector("#btn-apri").addEventListener("click", async () => {
   }
 });
 
-caricaRecenti();
-controllaAggiornamenti();
+async function avviaHome() {
+  const versione = await getVersioneApp();
+  const elVer = document.querySelector("#app-versione");
+  if (elVer) elVer.textContent = `v${versione}`;
+  await aggiornaTitoloFinestra();
+  await caricaRecenti();
+  controllaAggiornamenti();
+}
+
+avviaHome();

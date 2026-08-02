@@ -4,6 +4,7 @@ import {
   elencoUnita,
   statoCondominio,
 } from "../api.js";
+import { aggiornaTitoloFinestra } from "../versione.js";
 
 export async function onEnter(root) {
   const info = await statoCondominio();
@@ -113,7 +114,7 @@ export async function onEnter(root) {
       if (sidebarNome) {
         sidebarNome.textContent = aggiornato.nomeCondominio;
       }
-      document.title = `${aggiornato.nomeCondominio} — Gestione Condominio`;
+      await aggiornaTitoloFinestra(aggiornato.nomeCondominio);
       okEl.hidden = false;
       setModalitaModifica(false);
     } catch (err) {

@@ -1,6 +1,7 @@
 import { chiudiCondominio, statoCondominio } from "./api.js";
 import { chiediConferma } from "./conferma.js";
 import { controllaAggiornamenti } from "./aggiornamenti.js";
+import { aggiornaTitoloFinestra, getVersioneApp } from "./versione.js";
 
 const STORAGE_OCCUPANTI_UNITA = "gestione.occupantiUnitaId";
 const STORAGE_OCCUPANTI_MODIFICA = "gestione.occupantiModificaId";
@@ -237,9 +238,12 @@ async function avvia() {
 
   const nomeEl = document.querySelector("#nome-condominio");
   const percorsoEl = document.querySelector("#percorso-condominio");
+  const versioneEl = document.querySelector("#app-versione-sidebar");
   if (nomeEl) nomeEl.textContent = info.nomeCondominio;
   if (percorsoEl) percorsoEl.textContent = info.percorso;
-  document.title = `${info.nomeCondominio} — Gestione Condominio`;
+  const versione = await getVersioneApp();
+  if (versioneEl) versioneEl.textContent = `v${versione}`;
+  await aggiornaTitoloFinestra(info.nomeCondominio);
 
   document.querySelectorAll(".nav-item[data-page]").forEach((btn) => {
     btn.addEventListener("click", () => {

@@ -11,6 +11,14 @@
   letter-spacing: -0.02em;
 }
 
+.home-versione {
+  font-size: 0.45em;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  color: var(--ink-muted);
+  vertical-align: middle;
+}
+
 .home-kicker {
   margin: 0;
   text-transform: uppercase;
