@@ -1,0 +1,45 @@
+<section class="page-riepilogo">
+  <div class="riep-head">
+    <div class="riep-head-titoli">
+      <h1>Riepilogo Ripartizione</h1>
+      <p class="muted" id="riep-sottotitolo">
+        Quote ripartite (spese ATTIVA, periodi non archiviati) raggruppate per unità e gestione.
+        Doppio clic su un’unità o su una gestione per filtrare.
+      </p>
+    </div>
+    <div class="riep-head-destra">
+      <div class="riep-vista-btns" role="group" aria-label="Tipo di riepilogo">
+        <button type="button" class="btn btn-secondary btn-riep-vista is-active" id="btn-vista-unita">
+          Per unità
+        </button>
+        <button type="button" class="btn btn-secondary btn-riep-vista" id="btn-vista-proprieta">
+          Riepilogo Proprietà
+        </button>
+      </div>
+      <div class="riep-totale-head" id="riep-totale-head" hidden>
+        <span class="riep-totale-lbl">Totale generale</span>
+        <strong id="riep-totale-val">€ 0,00</strong>
+      </div>
+    </div>
+  </div>
+
+  <div class="filtri-riga" id="filtri-riga" hidden>
+    <div class="filtro-chip" id="filtro-unita" hidden>
+      <span class="filtro-chip-lbl">Unità</span>
+      <strong id="filtro-unita-nome"></strong>
+      <button type="button" class="btn-chip-togli" id="btn-togli-filtro-unita" title="Togli filtro unità">×</button>
+    </div>
+    <div class="filtro-chip" id="filtro-gestione" hidden>
+      <span class="filtro-chip-lbl">Gestione</span>
+      <strong id="filtro-gestione-nome"></strong>
+      <button type="button" class="btn-chip-togli" id="btn-togli-filtro-gestione" title="Togli filtro gestione">×</button>
+    </div>
+  </div>
+
+  <p class="form-error" id="riep-error" hidden></p>
+  <p class="muted" id="riep-vuoto" hidden>
+    Nessuna quota ripartita da mostrare.
+  </p>
+
+  <div id="riep-corpo"></div>
+</section>

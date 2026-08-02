@@ -1,0 +1,144 @@
+.home {
+  max-width: 780px;
+  margin: 0 auto;
+  padding: 3.5rem 1.5rem 3rem;
+}
+
+.home-hero h1 {
+  margin: 0.2rem 0 0.8rem;
+  font-family: var(--font-display);
+  font-size: clamp(2rem, 4vw, 2.8rem);
+  letter-spacing: -0.02em;
+}
+
+.home-kicker {
+  margin: 0;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--accent);
+}
+
+.home-lead {
+  margin: 0;
+  max-width: 36rem;
+  color: var(--ink-muted);
+  line-height: 1.55;
+  font-size: 1.05rem;
+}
+
+.home-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin: 2rem 0 2.5rem;
+}
+
+.home-recenti {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 1.25rem 1.35rem 1.1rem;
+}
+
+.recenti-head h2 {
+  margin: 0;
+  font-size: 1.1rem;
+}
+
+.recenti-head p {
+  margin: 0.25rem 0 0;
+  font-size: 0.92rem;
+}
+
+.recenti-lista {
+  list-style: none;
+  margin: 1rem 0 0;
+  padding: 0;
+}
+
+.recente-item {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 0.5rem 1rem;
+  align-items: center;
+  padding: 0.85rem 0;
+  border-top: 1px solid var(--line);
+}
+
+.recente-item:first-child {
+  border-top: none;
+}
+
+.recente-nome {
+  margin: 0;
+  font-weight: 600;
+}
+
+.recente-path {
+  margin: 0.2rem 0 0;
+  font-size: 0.82rem;
+  color: var(--ink-muted);
+  word-break: break-all;
+}
+
+.recente-azioni {
+  display: flex;
+  gap: 0.4rem;
+}
+
+.home-error,
+.dialog-error {
+  color: var(--danger);
+  margin-top: 1rem;
+}
+
+.dialog {
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 0;
+  width: min(440px, calc(100% - 2rem));
+  box-shadow: var(--shadow);
+  background: var(--surface);
+}
+
+.dialog::backdrop {
+  background: rgba(20, 30, 26, 0.45);
+}
+
+.dialog-body {
+  padding: 1.35rem 1.4rem 1.2rem;
+}
+
+.dialog-body h2 {
+  margin: 0 0 0.4rem;
+  font-family: var(--font-display);
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  margin: 1.1rem 0 0.5rem;
+}
+
+.field input {
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 0.7rem 0.8rem;
+  background: #fff;
+}
+
+.field input:focus {
+  outline: 2px solid var(--accent-soft);
+  border-color: var(--accent);
+}
+
+.dialog-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.5rem;
+  margin-top: 1.2rem;
+}

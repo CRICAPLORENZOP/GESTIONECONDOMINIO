@@ -1,0 +1,65 @@
+.page-occupazioni .page-head {
+  align-items: flex-end;
+}
+
+.page-occupazioni #btn-torna-unita {
+  margin: 0 0 0.55rem;
+  padding-left: 0;
+}
+
+.page-occupazioni .form-panel {
+  margin-bottom: 1rem;
+}
+
+.page-occupazioni .form-panel h2,
+.page-occupazioni .panel-attuale h2,
+.page-occupazioni .panel-precedenti h2 {
+  margin: 0 0 0.9rem;
+  font-size: 1.15rem;
+}
+
+.page-occupazioni .form-grid-occupante {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.page-occupazioni .panel-attuale {
+  margin-bottom: 1rem;
+}
+
+.page-occupazioni .attuale-card {
+  display: grid;
+  gap: 0.35rem;
+}
+
+.page-occupazioni .attuale-nome {
+  margin: 0;
+  font-size: 1.25rem;
+  font-weight: 700;
+}
+
+.page-occupazioni .attuale-meta {
+  margin: 0;
+  color: var(--ink-muted);
+}
+
+.page-occupazioni .attuale-azioni {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 0.85rem;
+}
+
+.page-occupazioni .attuale-vuoto {
+  margin: 0;
+  color: var(--ink-muted);
+}
+
+.page-occupazioni .table-wrap {
+  overflow-x: auto;
+}
+
+@media (max-width: 720px) {
+  .page-occupazioni .form-grid-occupante {
+    grid-template-columns: 1fr;
+  }
+}

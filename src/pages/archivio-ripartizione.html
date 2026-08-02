@@ -1,0 +1,55 @@
+<section class="page-ripartizione page-archivio-rip">
+  <div class="rip-head">
+    <div class="rip-head-titoli">
+      <button type="button" class="btn btn-secondary btn-torna-archivio" id="btn-torna-archivio">
+        ← Archivio
+      </button>
+      <h1>Ripartizione — <span id="rip-archivio-titolo-rendiconto">—</span></h1>
+      <p class="muted">
+        Quote dei periodi archiviati per il rendiconto selezionato.
+        Doppio clic su proprietà o occupante per filtrare.
+      </p>
+    </div>
+    <div class="rip-head-destra">
+      <div class="rip-head-azioni">
+        <button type="button" class="btn btn-secondary btn-rip-date" id="btn-stampa-rip">
+          Stampa
+        </button>
+        <div class="rip-totale-head" id="rip-totale-head" hidden>
+          <span class="rip-totale-lbl">Totale visualizzato</span>
+          <strong id="rip-totale-val">€ 0,00</strong>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="filtro-banner" id="filtro-proprieta" hidden>
+    <p class="filtro-testo">
+      Filtro proprietà:
+      <strong id="filtro-proprieta-nome"></strong>
+    </p>
+    <button type="button" class="btn btn-secondary btn-filtro-togli" id="btn-togli-filtro-proprieta">
+      Togli filtro
+    </button>
+  </div>
+
+  <div class="filtro-banner" id="filtro-occupante" hidden>
+    <p class="filtro-testo">
+      Filtro occupante:
+      <strong id="filtro-occupante-nome"></strong>
+    </p>
+    <button type="button" class="btn btn-secondary btn-filtro-togli" id="btn-togli-filtro-occupante">
+      Togli filtro
+    </button>
+  </div>
+
+  <p class="form-error" id="rip-error" hidden></p>
+  <p class="muted" id="rip-vuoto" hidden>
+    Nessuna ripartizione per questo rendiconto.
+  </p>
+
+  <div id="rip-corpo"></div>
+
+  <!-- Solo per stampa/PDF (nascosto a schermo) -->
+  <div id="rip-stampa" class="rip-stampa" hidden aria-hidden="true"></div>
+</section>

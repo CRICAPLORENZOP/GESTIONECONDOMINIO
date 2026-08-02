@@ -1,0 +1,102 @@
+.page-dati-condominio .dc-info {
+  margin-bottom: 1rem;
+}
+
+.page-dati-condominio .dc-sottotitolo {
+  margin: 0.1rem 0 0;
+  max-width: none;
+  white-space: nowrap;
+}
+
+.page-dati-condominio .dc-nome {
+  margin: 0 0 0.4rem;
+  font-weight: 600;
+  font-size: 1.05rem;
+}
+
+.page-dati-condominio .dc-unita {
+  margin: 0;
+}
+
+.page-dati-condominio .dc-anagrafica-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.4rem 0.75rem;
+  margin-bottom: 0.9rem;
+}
+
+.page-dati-condominio .dc-anagrafica-head h2 {
+  margin: 0;
+  font-size: 1.15rem;
+}
+
+.page-dati-condominio .panel h2 {
+  margin: 0 0 0.9rem;
+  font-size: 1.15rem;
+}
+
+.page-dati-condominio .dc-file-panel h2 {
+  margin: 0 0 0.9rem;
+}
+
+.page-dati-condominio #dc-note-condominio {
+  min-height: 7rem;
+}
+
+.page-dati-condominio #dc-nome-condominio[readonly],
+.page-dati-condominio #dc-note-condominio[readonly],
+.page-dati-condominio #dc-id-condominio {
+  background: var(--bg-panel);
+  color: var(--ink-muted);
+  cursor: default;
+}
+
+.page-dati-condominio #form-condominio.is-editing #dc-nome-condominio,
+.page-dati-condominio #form-condominio.is-editing #dc-note-condominio {
+  background: var(--surface, #fff);
+  color: var(--ink);
+  cursor: text;
+}
+
+.page-dati-condominio .dc-file-panel {
+  margin-top: 1rem;
+}
+
+.page-dati-condominio .dc-percorso-riga {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.4rem 0.5rem;
+  margin-bottom: 0.55rem;
+}
+
+.page-dati-condominio #dc-info-percorso {
+  flex: 1 1 12rem;
+  min-width: 0;
+  margin: 0;
+  padding: 0.35rem 0.55rem;
+  border-radius: 8px;
+  background: var(--bg-panel);
+  border: 1px solid var(--line);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 0.82rem;
+  font-weight: 600;
+  line-height: 1.3;
+}
+
+.page-dati-condominio #dc-info-percorso:hover,
+.page-dati-condominio #dc-info-percorso:focus {
+  white-space: normal;
+  word-break: break-all;
+  overflow: visible;
+}
+
+.page-dati-condominio .btn-apri-cartella {
+  flex: 0 0 auto;
+  padding: 0.28rem 0.65rem;
+  font-size: 0.82rem;
+}

@@ -1,0 +1,510 @@
+.page-report .report-vista-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.35rem 0.75rem;
+  margin-bottom: 0.35rem;
+}
+
+.page-report .report-vista-titoli h1 {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: 1.15rem;
+  font-weight: 600;
+  line-height: 1.15;
+}
+
+.page-report .report-vista-titoli p {
+  margin: 0.1rem 0 0;
+  font-size: 0.78rem;
+  line-height: 1.2;
+}
+
+.page-report .report-vista-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.page-report .filtri-riga {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.3rem 0.4rem;
+  margin-bottom: 0.4rem;
+}
+
+.page-report .filtro-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  max-width: 100%;
+  padding: 0.12rem 0.2rem 0.12rem 0.4rem;
+  border: 1px solid color-mix(in srgb, var(--accent) 35%, var(--line));
+  border-radius: 999px;
+  background: var(--accent-soft);
+  font-size: 0.72rem;
+  line-height: 1.2;
+}
+
+.page-report .filtro-chip-lbl {
+  font-size: 0.58rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  color: var(--ink-muted);
+  white-space: nowrap;
+}
+
+.page-report .filtro-chip strong {
+  font-weight: 700;
+  max-width: 9rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.page-report .btn-chip-togli {
+  flex: 0 0 auto;
+  width: 1.2rem;
+  height: 1.2rem;
+  padding: 0;
+  border: none;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--ink) 12%, transparent);
+  color: var(--ink);
+  font-size: 0.85rem;
+  font-weight: 700;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.page-report .btn-chip-togli:hover {
+  background: color-mix(in srgb, var(--ink) 22%, transparent);
+}
+
+.page-report .btn-stampa-report {
+  padding: 0.28rem 0.7rem;
+  font-size: 0.82rem;
+}
+
+.page-report .report-stampa-intestazione {
+  display: none;
+}
+
+.page-report .report-totale-box {
+  min-width: 6rem;
+  padding: 0.2rem 0.5rem;
+  border: 1px solid #e0c43a;
+  border-radius: 5px;
+  background: #ffe566;
+  color: #3d3200;
+  font-weight: 700;
+  font-size: 0.92rem;
+  text-align: center;
+  line-height: 1.2;
+}
+
+.page-report .report-colonne {
+  display: grid;
+  grid-template-columns: 3.4rem 5.4rem 5.4rem 5.4rem 3.2rem 1fr;
+  gap: 0.15rem 0.35rem;
+  padding: 0.15rem 0.35rem;
+  margin-bottom: 0.2rem;
+  font-size: 0.65rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  color: var(--ink-muted);
+  border-bottom: 1px solid var(--line);
+  line-height: 1.15;
+}
+
+.page-report .report-colonne .num {
+  text-align: right;
+}
+
+.page-report .gruppo-gestione {
+  margin-bottom: 0.55rem;
+}
+
+.page-report .gruppo-gestione-titolo {
+  margin: 0 0 0.2rem;
+  padding: 0.18rem 0.4rem;
+  background: #ffe566;
+  border: 1px solid #e0c43a;
+  border-radius: 4px;
+  font-weight: 700;
+  font-size: 0.82rem;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  line-height: 1.2;
+  cursor: pointer;
+  text-decoration: underline dotted color-mix(in srgb, #3d3200 55%, transparent);
+  text-underline-offset: 0.12em;
+}
+
+.page-report .gruppo-gestione-titolo:hover {
+  filter: brightness(0.97);
+}
+
+.page-report .gruppo-tipologia {
+  margin: 0 0 0.35rem 0.2rem;
+}
+
+.page-report .gruppo-tipologia-titolo {
+  margin: 0 0 0.15rem;
+  padding: 0.12rem 0.35rem;
+  background: #fff3b0;
+  border: 1px solid #e8d56a;
+  border-radius: 4px;
+  font-weight: 700;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  line-height: 1.2;
+  cursor: pointer;
+  text-decoration: underline dotted color-mix(in srgb, var(--ink-muted) 70%, transparent);
+  text-underline-offset: 0.15em;
+}
+
+.page-report .gruppo-tipologia-titolo:hover {
+  background: #ffe98a;
+}
+
+.page-report .spesa-blocco {
+  margin-bottom: 0.2rem;
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  overflow: hidden;
+  background: var(--surface);
+}
+
+.page-report .spesa-riga {
+  display: grid;
+  grid-template-columns: 3.4rem 5.4rem 5.4rem 5.4rem 3.2rem 1fr;
+  gap: 0.15rem 0.35rem;
+  align-items: center;
+  padding: 0.15rem 0.35rem;
+  background: #e8eef5;
+  font-size: 0.78rem;
+  line-height: 1.2;
+}
+
+.page-report .spesa-riga .num {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.page-report .spesa-importo {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: flex-end;
+  gap: 0.1rem 0.4rem;
+  font-weight: 700;
+  font-size: 0.78rem;
+}
+
+.page-report .spesa-importo .suddivisa {
+  font-weight: 600;
+  font-size: 0.7rem;
+  color: var(--ink-muted);
+}
+
+.page-report .spesa-importo .gia-conteggiati {
+  font-weight: 500;
+  font-size: 0.68rem;
+  color: var(--ink-muted);
+  font-style: italic;
+}
+
+.page-report .spesa-note {
+  margin: 0;
+  padding: 0.1rem 0.35rem;
+  background: #dceaf7;
+  font-size: 0.72rem;
+  line-height: 1.2;
+  border-top: 1px solid #c5d8eb;
+}
+
+.page-report .spesa-note strong {
+  margin-right: 0.25rem;
+}
+
+.page-report .periodo-riga {
+  display: grid;
+  grid-template-columns: 3.4rem 5.4rem 5.4rem 5.4rem 3.2rem minmax(5rem, 1fr) auto auto;
+  gap: 0.15rem 0.35rem;
+  align-items: center;
+  padding: 0.08rem 0.35rem 0.08rem 0.75rem;
+  font-size: 0.74rem;
+  line-height: 1.2;
+  border-top: 1px solid #eef1f4;
+}
+
+.page-report .periodo-riga .num {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.page-report .badge-periodo {
+  display: inline-block;
+  padding: 0 0.28rem;
+  border-radius: 999px;
+  font-size: 0.62rem;
+  font-weight: 700;
+  background: #ffe566;
+  color: #5c4b00;
+  text-align: center;
+  line-height: 1.35;
+}
+
+.page-report .badge-periodo.is-archiviato {
+  background: #f0f0f0;
+  color: #666;
+}
+
+.page-report .btn-quota {
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  padding: 0 0.3rem;
+  background: var(--surface);
+  color: var(--ink-muted);
+  font-size: 0.65rem;
+  font-weight: 600;
+  cursor: default;
+  line-height: 1.4;
+}
+
+.page-report .spesa-subtotale {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.75rem;
+  padding: 0.1rem 0.4rem;
+  border-top: 1px solid var(--line);
+  font-size: 0.74rem;
+  font-weight: 700;
+  background: #f7faf8;
+  line-height: 1.25;
+}
+
+.page-report .gruppo-totale {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.25rem 0.45rem;
+  margin-top: 0.15rem;
+  padding: 0.15rem 0.4rem;
+  background: #e3f0ea;
+  border: 1px solid #b7d4c6;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  line-height: 1.25;
+}
+
+.page-report .gruppo-totale-nome {
+  padding: 0.05rem 0.3rem;
+  background: #c8e6d5;
+  border-radius: 3px;
+  text-transform: uppercase;
+}
+
+.page-report .gruppo-totale-importo {
+  min-width: 4.5rem;
+  padding: 0.05rem 0.35rem;
+  background: #ffe566;
+  border: 1px solid #e0c43a;
+  border-radius: 3px;
+  text-align: right;
+}
+
+.page-report .gruppo-totale-gestione {
+  margin-top: 0.25rem;
+  background: #d4ebe0;
+  border-color: #9fcbb5;
+  font-size: 0.8rem;
+}
+
+.page-report #report-vuoto,
+.page-report #report-error {
+  margin: 0.25rem 0;
+  font-size: 0.85rem;
+}
+
+@media (max-width: 900px) {
+  .page-report .report-colonne,
+  .page-report .spesa-riga,
+  .page-report .periodo-riga {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .page-report .spesa-importo,
+  .page-report .periodo-riga {
+    justify-content: flex-start;
+  }
+}
+
+/* ——— Stampa / PDF A4 verticale compatto ——— */
+@media print {
+  @page {
+    size: A4 portrait;
+    margin: 8mm 9mm;
+  }
+
+  html,
+  body {
+    margin: 0 !important;
+    min-height: 0 !important;
+    background: #fff !important;
+    color: #000 !important;
+  }
+
+  .sidebar,
+  .page-report .btn-stampa-report,
+  .page-report .btn-quota,
+  .page-report .report-vista-titoli p.muted,
+  .page-report .form-error,
+  .page-report .filtri-riga,
+  .page-report .btn-chip-togli,
+  .page-report .periodo-riga,
+  .page-report .spesa-subtotale,
+  .page-report .spesa-importo .suddivisa,
+  .page-report .badge-periodo {
+    display: none !important;
+  }
+
+  .app-shell {
+    display: block !important;
+    min-height: 0 !important;
+  }
+
+  .content {
+    padding: 0 !important;
+  }
+
+  .page-root {
+    min-height: 0 !important;
+  }
+
+  .page-report,
+  .page-report * {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  .page-report .report-stampa-intestazione {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 0.5rem;
+    margin: 0 0 0.35rem;
+    padding-bottom: 0.2rem;
+    border-bottom: 1px solid #999;
+    font-size: 8pt;
+  }
+
+  .page-report .report-vista-head {
+    margin-bottom: 0.25rem;
+    align-items: flex-end;
+  }
+
+  .page-report .report-vista-titoli h1 {
+    font-size: 12pt;
+  }
+
+  .page-report .report-totale-box {
+    min-width: 0;
+    padding: 0.1rem 0.35rem;
+    font-size: 9pt;
+    border-radius: 2px;
+  }
+
+  .page-report .report-colonne {
+    grid-template-columns: 2.6rem 4.2rem 4.2rem 4.2rem 2.4rem 1fr;
+    gap: 0.08rem 0.25rem;
+    padding: 0.08rem 0.2rem;
+    margin-bottom: 0.12rem;
+    font-size: 7pt;
+  }
+
+  .page-report .gruppo-gestione {
+    margin-bottom: 0.35rem;
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+
+  .page-report .gruppo-gestione-titolo {
+    margin: 0 0 0.12rem;
+    padding: 0.1rem 0.25rem;
+    font-size: 8.5pt;
+    border-radius: 2px;
+  }
+
+  .page-report .gruppo-tipologia {
+    margin: 0 0 0.22rem 0.1rem;
+  }
+
+  .page-report .gruppo-tipologia-titolo {
+    margin: 0 0 0.08rem;
+    padding: 0.06rem 0.22rem;
+    font-size: 7.5pt;
+    border-radius: 2px;
+  }
+
+  .page-report .spesa-blocco {
+    margin-bottom: 0.12rem;
+    border-radius: 2px;
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+
+  .page-report .spesa-riga {
+    grid-template-columns: 2.6rem 4.2rem 4.2rem 4.2rem 2.4rem 1fr;
+    gap: 0.08rem 0.25rem;
+    padding: 0.08rem 0.2rem;
+    font-size: 7.5pt;
+  }
+
+  .page-report .spesa-importo {
+    font-size: 7.5pt;
+    gap: 0.05rem 0.25rem;
+  }
+
+  .page-report .spesa-importo .gia-conteggiati {
+    font-size: 6.5pt;
+  }
+
+  .page-report .spesa-note {
+    padding: 0.05rem 0.2rem;
+    font-size: 7pt;
+  }
+
+  .page-report .gruppo-totale {
+    margin-top: 0.08rem;
+    padding: 0.08rem 0.25rem;
+    font-size: 7.5pt;
+    border-radius: 2px;
+    gap: 0.15rem 0.3rem;
+  }
+
+  .page-report .gruppo-totale-nome {
+    padding: 0.02rem 0.2rem;
+    border-radius: 2px;
+  }
+
+  .page-report .gruppo-totale-importo {
+    min-width: 3.5rem;
+    padding: 0.02rem 0.22rem;
+    border-radius: 2px;
+  }
+
+  .page-report .gruppo-totale-gestione {
+    margin-top: 0.15rem;
+    font-size: 8pt;
+  }
+}

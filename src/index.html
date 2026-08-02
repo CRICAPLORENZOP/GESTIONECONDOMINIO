@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="it">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Gestione Condominio</title>
+    <link rel="stylesheet" href="css/common.css" />
+    <link rel="stylesheet" href="css/index.css" />
+  </head>
+  <body>
+    <div class="home">
+      <header class="home-hero">
+        <p class="home-kicker">Applicazione desktop</p>
+        <h1>Gestione Condominio</h1>
+        <p class="home-lead">
+          Ogni condominio ha il suo file database. Creane uno nuovo o aprine uno
+          già salvato sul PC.
+        </p>
+      </header>
+
+      <section class="home-actions" aria-label="Azioni principali">
+        <button type="button" class="btn" id="btn-nuovo">Nuovo condominio</button>
+        <button type="button" class="btn btn-secondary" id="btn-apri">
+          Apri condominio…
+        </button>
+      </section>
+
+      <section class="home-recenti" aria-labelledby="titolo-recenti">
+        <div class="recenti-head">
+          <h2 id="titolo-recenti">Aperti di recente</h2>
+          <p class="muted" id="recenti-hint">I file che hai usato ultimamente</p>
+        </div>
+        <ul class="recenti-lista" id="lista-recenti"></ul>
+        <p class="muted" id="recenti-vuoti" hidden>
+          Nessun condominio recente. Creane uno nuovo o aprine uno esistente.
+        </p>
+      </section>
+
+      <p class="home-error" id="home-error" hidden></p>
+    </div>
+
+    <dialog class="dialog" id="dialog-nuovo">
+      <form method="dialog" id="form-nuovo" class="dialog-body">
+        <h2>Nuovo condominio</h2>
+        <p class="muted">
+          Scegli un nome e dove salvare il file (es. Documenti o una cartella tua).
+        </p>
+        <label class="field">
+          <span>Nome condominio</span>
+          <input
+            type="text"
+            id="input-nome"
+            name="nome"
+            required
+            maxlength="120"
+            placeholder="Es. Condominio Via Roma 12"
+          />
+        </label>
+        <p class="dialog-error" id="dialog-error" hidden></p>
+        <div class="dialog-actions">
+          <button type="button" class="btn btn-ghost" id="btn-annulla-nuovo">
+            Annulla
+          </button>
+          <button type="submit" class="btn">Scegli cartella e crea</button>
+        </div>
+      </form>
+    </dialog>
+
+    <script type="module" src="js/index.js"></script>
+  </body>
+</html>

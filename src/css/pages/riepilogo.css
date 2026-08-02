@@ -1,0 +1,265 @@
+.page-riepilogo .riep-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 0.4rem 0.85rem;
+  margin-bottom: 0.55rem;
+}
+
+.page-riepilogo .riep-head-titoli h1 {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: 1.15rem;
+  font-weight: 600;
+  line-height: 1.15;
+}
+
+.page-riepilogo .riep-head-titoli p {
+  margin: 0.1rem 0 0;
+  font-size: 0.78rem;
+  line-height: 1.2;
+}
+
+.page-riepilogo .riep-head-destra {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 0.55rem 0.85rem;
+}
+
+.page-riepilogo .riep-vista-btns {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.3rem;
+}
+
+.page-riepilogo .btn-riep-vista {
+  padding: 0.28rem 0.65rem;
+  font-size: 0.82rem;
+}
+
+.page-riepilogo .btn-riep-vista.is-active {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
+}
+
+.page-riepilogo .btn-riep-vista.is-active:hover {
+  filter: brightness(0.95);
+}
+
+.page-riepilogo .riep-totale-head {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.05rem;
+  padding: 0.2rem 0.55rem;
+  border: 1px solid #e0c43a;
+  border-radius: 6px;
+  background: #ffe566;
+}
+
+.page-riepilogo .riep-totale-lbl {
+  font-size: 0.62rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--ink-muted);
+}
+
+.page-riepilogo .riep-totale-head strong {
+  font-size: 1.05rem;
+  font-variant-numeric: tabular-nums;
+  line-height: 1.15;
+}
+
+.page-riepilogo .filtri-riga {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.3rem 0.4rem;
+  margin-bottom: 0.4rem;
+}
+
+.page-riepilogo .filtro-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  max-width: 100%;
+  padding: 0.12rem 0.2rem 0.12rem 0.4rem;
+  border: 1px solid color-mix(in srgb, var(--accent) 35%, var(--line));
+  border-radius: 999px;
+  background: var(--accent-soft);
+  font-size: 0.72rem;
+  line-height: 1.2;
+}
+
+.page-riepilogo .filtro-chip-lbl {
+  font-size: 0.58rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  color: var(--ink-muted);
+  white-space: nowrap;
+}
+
+.page-riepilogo .filtro-chip strong {
+  font-weight: 700;
+  max-width: 11rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.page-riepilogo .btn-chip-togli {
+  flex: 0 0 auto;
+  width: 1.2rem;
+  height: 1.2rem;
+  padding: 0;
+  border: none;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--ink) 12%, transparent);
+  color: var(--ink);
+  font-size: 0.85rem;
+  font-weight: 700;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.page-riepilogo .btn-chip-togli:hover {
+  background: color-mix(in srgb, var(--ink) 22%, transparent);
+}
+
+.page-riepilogo .unita-card {
+  margin-bottom: 0.55rem;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  overflow: hidden;
+  background: var(--surface);
+}
+
+.page-riepilogo .unita-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.35rem 0.75rem;
+  padding: 0.35rem 0.55rem;
+  background: #e8eef5;
+  border-bottom: 1px solid var(--line);
+  cursor: pointer;
+}
+
+.page-riepilogo .unita-head:hover {
+  background: #dce6f2;
+}
+
+.page-riepilogo .unita-head-static {
+  cursor: default;
+}
+
+.page-riepilogo .unita-head-static:hover {
+  background: #e8eef5;
+}
+
+.page-riepilogo .proprieta-card .unita-head {
+  background: #e4efe8;
+}
+
+.page-riepilogo .proprieta-card .unita-head-static:hover {
+  background: #e4efe8;
+}
+
+.page-riepilogo .proprieta-card .unita-proprieta {
+  text-decoration: none;
+}
+
+.page-riepilogo .unita-proprieta {
+  margin: 0;
+  font-size: 0.95rem;
+  font-weight: 700;
+  text-decoration: underline dotted color-mix(in srgb, var(--ink-muted) 70%, transparent);
+  text-underline-offset: 0.15em;
+}
+
+.page-riepilogo .unita-meta {
+  margin: 0;
+  font-size: 0.75rem;
+  color: var(--ink-muted);
+}
+
+.page-riepilogo .unita-totale {
+  font-size: 0.95rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.page-riepilogo .gestione-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.82rem;
+  line-height: 1.25;
+}
+
+.page-riepilogo .gestione-table th {
+  padding: 0.2rem 0.55rem;
+  text-align: left;
+  font-size: 0.65rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: var(--ink-muted);
+  border-bottom: 1px solid var(--line);
+  background: #f7faf8;
+}
+
+.page-riepilogo .gestione-table th.num,
+.page-riepilogo .gestione-table td.num {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.page-riepilogo .gestione-table td {
+  padding: 0.22rem 0.55rem;
+  border-bottom: 1px solid #f0f3f5;
+}
+
+.page-riepilogo .gestione-table .col-gestione {
+  font-weight: 600;
+  cursor: pointer;
+  text-decoration: underline dotted color-mix(in srgb, var(--ink-muted) 70%, transparent);
+  text-underline-offset: 0.15em;
+}
+
+.page-riepilogo .gestione-table .col-gestione:hover {
+  color: var(--accent);
+}
+
+.page-riepilogo .gestione-table tr:last-child td {
+  border-bottom: none;
+}
+
+.page-riepilogo .unita-foot {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.45rem;
+  padding: 0.25rem 0.55rem;
+  background: #e3f0ea;
+  border-top: 1px solid #b7d4c6;
+  font-size: 0.82rem;
+  font-weight: 700;
+}
+
+.page-riepilogo .unita-foot .tot-box {
+  padding: 0.08rem 0.4rem;
+  background: #ffe566;
+  border: 1px solid #e0c43a;
+  border-radius: 3px;
+  font-variant-numeric: tabular-nums;
+}
+
+.page-riepilogo #riep-vuoto,
+.page-riepilogo #riep-error {
+  margin: 0.25rem 0;
+  font-size: 0.85rem;
+}

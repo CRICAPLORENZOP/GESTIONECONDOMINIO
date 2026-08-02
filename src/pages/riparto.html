@@ -1,0 +1,105 @@
+<section class="page-riparto">
+  <div class="page-head page-head-compatto">
+    <button type="button" class="btn btn-ghost" id="btn-torna-spese">
+      ← Spese
+    </button>
+    <div class="page-head-riga">
+      <h1 id="titolo-riparto">Ripartizione spesa</h1>
+      <p id="sottotitolo-riparto" class="muted"></p>
+    </div>
+    <button type="button" class="btn btn-secondary" id="btn-torna-ripartizione" hidden>
+      Torna
+    </button>
+  </div>
+
+  <p class="form-error" id="pagina-error" hidden></p>
+
+  <div class="panel panel-riepilogo panel-riepilogo-compatto" id="panel-riepilogo">
+    <div class="riepilogo-riga">
+      <h2>Dati spesa</h2>
+      <div class="riepilogo-grid" id="riepilogo-spesa"></div>
+    </div>
+  </div>
+
+  <div class="panel form-panel panel-compatto">
+    <div class="nuovo-periodo-riga">
+      <div class="nuovo-periodo-head">
+        <h2>Nuovo periodo</h2>
+        <button
+          type="button"
+          class="btn-aiuto"
+          id="btn-aiuto-periodo"
+          aria-expanded="false"
+          aria-controls="aiuto-periodo"
+          title="Come funziona il riparto"
+        >
+          ?
+        </button>
+      </div>
+      <form id="form-periodo" class="form-periodo-inline">
+        <div class="form-grid form-grid-periodo">
+          <label class="field">
+            <span>Periodo da *</span>
+            <input type="date" id="periodo-da" required />
+          </label>
+          <label class="field">
+            <span>Periodo a *</span>
+            <input type="date" id="periodo-a" required />
+          </label>
+          <div class="form-actions form-actions-inline">
+            <button type="submit" class="btn">Crea periodo</button>
+          </div>
+        </div>
+        <p class="form-error" id="form-error" hidden></p>
+      </form>
+    </div>
+    <p class="muted aiuto-periodo" id="aiuto-periodo" hidden>
+      Il periodo deve stare dentro le date della spesa. Si ripartisce il
+      <strong>Totale</strong> = Cifra + Spese pagamento. L’importo del periodo =
+      (Totale ÷ giorni spesa) × giorni periodo. Poi, per ogni occupante presente:
+      si calcola il <strong>parziale</strong> = Percentuale × Millesimi
+      (oppure × Parti = n. componenti, se la categoria è a Parti).
+      In anteprima puoi modificare Parti/Millesimi e % solo per questa spesa;
+      si somma tutto; quota = (importo periodo ÷ totale parziali) × parziale.
+    </p>
+  </div>
+
+  <div class="panel panel-anteprima panel-compatto" id="panel-anteprima" hidden>
+    <div class="anteprima-head">
+      <h2>Anteprima</h2>
+      <p id="anteprima-meta" class="muted"></p>
+    </div>
+    <p class="muted anteprima-hint">
+      Modifica Parti/Millesimi e %; poi «Crea periodo».
+    </p>
+    <p id="anteprima-avviso" class="form-error" hidden></p>
+    <div class="table-wrap">
+      <table class="data-table data-table-compatta" id="tabella-anteprima">
+        <thead>
+          <tr>
+            <th>Proprietà</th>
+            <th>Occupante</th>
+            <th class="num" id="th-anteprima-peso">Parti</th>
+            <th class="num">%</th>
+            <th class="num">Parziale</th>
+            <th class="num">Importo €</th>
+          </tr>
+        </thead>
+        <tbody id="corpo-anteprima"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="panel panel-periodi panel-compatto">
+    <h2>Periodi creati</h2>
+    <p class="muted" id="periodi-vuoti" hidden>
+      Nessun periodo ancora. Creane uno con le date sopra.
+    </p>
+    <div id="lista-periodi"></div>
+    <div class="periodi-totale-finale" id="periodi-totale-finale" hidden>
+      <span>Totale periodi</span>
+      <strong id="periodi-totale-val"></strong>
+      <span class="periodi-totale-check" id="periodi-totale-check"></span>
+    </div>
+  </div>
+</section>

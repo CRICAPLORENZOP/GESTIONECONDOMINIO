@@ -1,0 +1,49 @@
+<section class="page-archivio">
+  <div class="archivio-vista">
+    <div class="archivio-vista-head">
+      <div class="archivio-vista-titoli">
+        <h1>Archivio Rendiconti</h1>
+        <p class="muted">
+          Solo periodi con Archivia spuntato. Scegli un «Rendiconto del» per vedere le spese.
+          Stesso layout dell’elenco spese ripartite.
+        </p>
+      </div>
+      <div class="archivio-vista-meta">
+        <label class="archivio-filtro-rendiconto">
+          <span>Rendiconto del</span>
+          <select id="filtro-rendiconto">
+            <option value="">— Seleziona un rendiconto —</option>
+          </select>
+        </label>
+        <button type="button" class="btn btn-secondary btn-ripartizione-archivio" id="btn-ripartizione-archivio" disabled>
+          Ripartizione
+        </button>
+        <button type="button" class="btn btn-secondary btn-stampa-archivio" id="btn-stampa-archivio">
+          Stampa
+        </button>
+        <div class="archivio-totale-box" id="totale-generale">€ 0,00</div>
+      </div>
+    </div>
+
+    <div class="archivio-stampa-intestazione" aria-hidden="true">
+      <strong id="archivio-stampa-condo"></strong>
+      <span id="archivio-stampa-data"></span>
+    </div>
+
+    <p class="form-error" id="archivio-error" hidden></p>
+    <p class="muted" id="archivio-vuoto">
+      Seleziona un rendiconto nell’elenco in alto per vedere i dati.
+    </p>
+
+    <div class="archivio-colonne" id="archivio-colonne" hidden>
+      <span>Genere</span>
+      <span>Emissione</span>
+      <span>Periodo da</span>
+      <span>Periodo a</span>
+      <span class="num">Giorni</span>
+      <span class="num">Importo</span>
+    </div>
+
+    <div id="archivio-corpo"></div>
+  </div>
+</section>

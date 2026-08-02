@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="it">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Gestione Condominio</title>
+    <link rel="stylesheet" href="css/common.css" />
+    <link rel="stylesheet" href="css/app.css" />
+  </head>
+  <body>
+    <div class="app-shell">
+      <main class="content">
+        <div id="page-root" class="page-root" aria-live="polite">
+          <p class="muted" id="avvio-msg">Caricamento…</p>
+        </div>
+      </main>
+
+      <aside class="sidebar" aria-label="Menu principale">
+        <div class="sidebar-brand">
+          <p class="sidebar-kicker">Condominio</p>
+          <h1 id="nome-condominio">—</h1>
+          <p class="sidebar-path muted" id="percorso-condominio"></p>
+        </div>
+
+        <nav class="sidebar-nav">
+          <button type="button" class="nav-item is-active" data-page="dati-condominio">
+            Dati Condominio
+          </button>
+          <button type="button" class="nav-item" data-page="unita">
+            Unità immobiliari
+          </button>
+          <button type="button" class="nav-item" data-page="categorie">
+            Categorie spesa
+          </button>
+          <button type="button" class="nav-item" data-page="spese">
+            Spese
+          </button>
+          <button type="button" class="nav-item" data-page="report">
+            Elenco Spese Conteggiate
+          </button>
+          <button type="button" class="nav-item" data-page="ripartizione">
+            Ripartizione spese conteggiate
+          </button>
+          <button type="button" class="nav-item" data-page="riepilogo">
+            Riepilogo Ripartizione
+          </button>
+          <button type="button" class="nav-item" data-page="archivio-rendiconti">
+            Archivio Rendiconti
+          </button>
+          <button type="button" class="nav-item nav-item-chiudi" id="btn-chiudi">
+            Chiudi condominio
+          </button>
+        </nav>
+      </aside>
+    </div>
+
+    <script>
+      window.addEventListener("error", function (event) {
+        var root = document.querySelector("#page-root");
+        if (!root) return;
+        root.innerHTML =
+          '<p style="color:#9b2c2c">Errore: ' +
+          String((event && event.message) || "sconosciuto") +
+          "</p>";
+      });
+      window.addEventListener("unhandledrejection", function (event) {
+        var root = document.querySelector("#page-root");
+        if (!root) return;
+        var motivo =
+          event && event.reason != null ? String(event.reason) : "sconosciuto";
+        root.innerHTML =
+          '<p style="color:#9b2c2c">Errore: ' + motivo + "</p>";
+      });
+    </script>
+    <script type="module" src="./js/app.js"></script>
+  </body>
+</html>

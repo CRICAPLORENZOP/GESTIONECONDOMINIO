@@ -1,0 +1,125 @@
+<section class="page-unita">
+  <div class="page-head page-head-compatto">
+    <div class="page-head-riga">
+      <h1>Unità immobiliari</h1>
+      <p class="muted">
+        Ogni unità appartiene a questo condominio. Con il pulsante Occupanti
+        gestisci chi abita (o ha abitato) quell’unità.
+      </p>
+    </div>
+    <button type="button" class="btn" id="btn-nuova-unita">Nuova unità</button>
+  </div>
+
+  <div class="panel form-panel" id="pannello-form" hidden>
+    <h2 id="titolo-form">Nuova unità</h2>
+    <form id="form-unita">
+      <input type="hidden" id="id-unita" value="" />
+      <div class="form-grid form-grid-unita">
+        <label class="field">
+          <span>Proprietà *</span>
+          <input
+            type="text"
+            id="proprieta"
+            name="proprieta"
+            required
+            maxlength="120"
+            placeholder="Es. Int. 1, Box A, Negozio"
+          />
+        </label>
+        <label class="field">
+          <span>Identificativo</span>
+          <input
+            type="text"
+            id="identificativo"
+            name="identificativo"
+            maxlength="80"
+            placeholder="Es. foglio/mappa"
+          />
+        </label>
+        <label class="field">
+          <span>Subalterno</span>
+          <input
+            type="text"
+            id="subalterno"
+            name="subalterno"
+            maxlength="40"
+            placeholder="Es. 1"
+          />
+        </label>
+        <label class="field">
+          <span>Piano</span>
+          <input
+            type="text"
+            id="piano"
+            name="piano"
+            maxlength="40"
+            placeholder="Es. 1, T, S1"
+          />
+        </label>
+        <label class="field">
+          <span>Millesimi</span>
+          <input
+            type="number"
+            id="millesimi"
+            name="millesimi"
+            min="0"
+            step="0.01"
+            value="0"
+          />
+        </label>
+        <label class="field">
+          <span>Uso</span>
+          <select id="uso" name="uso">
+            <option value="ABITAZIONE" selected>ABITAZIONE</option>
+            <option value="UFFICIO">UFFICIO</option>
+            <option value="NEGOZIO">NEGOZIO</option>
+            <option value="DEPOSITO">DEPOSITO</option>
+            <option value="ARTIGIANALE">ARTIGIANALE</option>
+            <option value="LABORATORIO">LABORATORIO</option>
+            <option value="BOX">BOX</option>
+          </select>
+        </label>
+        <label class="field field-full">
+          <span>Note unità</span>
+          <textarea
+            id="note-unita"
+            name="noteUnita"
+            maxlength="2000"
+            placeholder="Annotazioni libere"
+          ></textarea>
+        </label>
+      </div>
+      <p class="form-error" id="form-error" hidden></p>
+      <div class="form-actions">
+        <button type="submit" class="btn" id="btn-salva-unita">Salva</button>
+        <button type="button" class="btn btn-secondary" id="btn-annulla-unita">
+          Annulla
+        </button>
+      </div>
+    </form>
+  </div>
+
+  <div class="panel table-panel">
+    <p class="muted" id="unita-vuote" hidden>
+      Nessuna unità ancora. Clicca «Nuova unità» per iniziare.
+    </p>
+    <div class="table-wrap" id="tabella-wrap">
+      <table class="data-table" id="tabella-unita">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Proprietà</th>
+            <th>Identificativo</th>
+            <th>Subalterno</th>
+            <th>Piano</th>
+            <th class="num">Millesimi</th>
+            <th>Uso</th>
+            <th class="azioni">Azioni</th>
+          </tr>
+        </thead>
+        <tbody id="corpo-unita"></tbody>
+      </table>
+    </div>
+    <p class="form-error" id="lista-error" hidden></p>
+  </div>
+</section>

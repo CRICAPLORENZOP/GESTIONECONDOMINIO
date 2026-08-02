@@ -1,0 +1,73 @@
+<section class="page-dati-condominio">
+  <div class="page-head">
+    <div>
+      <h1>Dati Condominio</h1>
+      <p class="dc-sottotitolo">Riepilogo del condominio aperto, dati anagrafici, note e percorso del file database.</p>
+    </div>
+  </div>
+
+  <div class="panel dc-info">
+    <p class="dc-nome" id="dc-riepilogo-nome"></p>
+    <p class="dc-unita muted" id="dc-riepilogo-unita"></p>
+  </div>
+
+  <div class="panel">
+    <div class="dc-anagrafica-head">
+      <h2>Anagrafica</h2>
+      <button type="button" class="btn btn-secondary" id="btn-modifica-anagrafica">
+        Modifica
+      </button>
+    </div>
+    <form id="form-condominio">
+      <div class="form-grid">
+        <label class="field">
+          <span>ID condominio</span>
+          <input type="text" id="dc-id-condominio" readonly />
+        </label>
+        <label class="field">
+          <span>Nome condominio *</span>
+          <input
+            type="text"
+            id="dc-nome-condominio"
+            required
+            maxlength="120"
+            placeholder="Es. Condominio Via Roma 12"
+            readonly
+          />
+        </label>
+        <label class="field field-full">
+          <span>Note condominio</span>
+          <textarea
+            id="dc-note-condominio"
+            maxlength="2000"
+            placeholder="Annotazioni libere sul condominio…"
+            readonly
+          ></textarea>
+        </label>
+      </div>
+      <p class="form-error" id="form-condominio-error" hidden></p>
+      <p class="muted" id="form-condominio-ok" hidden>Salvato.</p>
+      <div class="form-actions" id="dc-azioni-modifica" hidden>
+        <button type="button" class="btn btn-secondary" id="btn-annulla-anagrafica">
+          Annulla
+        </button>
+        <button type="submit" class="btn">Salva</button>
+      </div>
+    </form>
+  </div>
+
+  <div class="panel dc-file-panel">
+    <h2>File database</h2>
+    <div class="dc-percorso-riga">
+      <p id="dc-info-percorso"></p>
+      <button type="button" class="btn btn-secondary btn-apri-cartella" id="btn-apri-cartella-db">
+        Apri cartella
+      </button>
+    </div>
+    <p class="muted">
+      Puoi copiare questo file su un altro PC e riaprirlo da Home → Apri
+      condominio.
+    </p>
+    <p class="form-error" id="dc-file-error" hidden></p>
+  </div>
+</section>

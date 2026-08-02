@@ -1,0 +1,75 @@
+<section class="page-categorie">
+  <div class="page-head page-head-categorie">
+    <div class="page-head-riga">
+      <h1>Categorie di spesa</h1>
+      <button type="button" class="btn" id="btn-nuova-tipologia">
+        Nuova categoria
+      </button>
+    </div>
+    <p class="cat-sottotitolo">Tipologie di spesa del condominio (es. acqua, luce, pulizia). Per ciascuna scegli come ripartire: a millesimi o a parti.</p>
+  </div>
+
+  <div class="panel form-panel" id="pannello-form" hidden>
+    <h2 id="titolo-form">Nuova categoria</h2>
+    <form id="form-tipologia">
+      <input type="hidden" id="id-tipologia" value="" />
+      <div class="form-grid form-grid-categorie">
+        <label class="field">
+          <span>Gruppo spesa *</span>
+          <input
+            type="text"
+            id="gruppo-spesa"
+            name="gruppoSpesa"
+            required
+            maxlength="120"
+            placeholder="Es. Acqua, Luce, Pulizia scale"
+          />
+        </label>
+        <label class="field">
+          <span>Ripartizione *</span>
+          <select id="ripartizione" name="ripartizione" required>
+            <option value="Millesimi" selected>Millesimi</option>
+            <option value="Parti">Parti</option>
+          </select>
+        </label>
+        <label class="field field-full">
+          <span>Note tipologia spesa</span>
+          <textarea
+            id="note-tipologia"
+            name="noteTipologiaSpesa"
+            maxlength="2000"
+            placeholder="Annotazioni libere"
+          ></textarea>
+        </label>
+      </div>
+      <p class="form-error" id="form-error" hidden></p>
+      <div class="form-actions">
+        <button type="submit" class="btn">Salva</button>
+        <button type="button" class="btn btn-secondary" id="btn-annulla">
+          Annulla
+        </button>
+      </div>
+    </form>
+  </div>
+
+  <div class="panel table-panel">
+    <p class="muted" id="categorie-vuote" hidden>
+      Nessuna categoria ancora. Clicca «Nuova categoria» per iniziare.
+    </p>
+    <div class="table-wrap" id="tabella-wrap">
+      <table class="data-table" id="tabella-categorie">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Gruppo spesa</th>
+            <th>Ripartizione</th>
+            <th>Note</th>
+            <th class="azioni">Azioni</th>
+          </tr>
+        </thead>
+        <tbody id="corpo-categorie"></tbody>
+      </table>
+    </div>
+    <p class="form-error" id="lista-error" hidden></p>
+  </div>
+</section>

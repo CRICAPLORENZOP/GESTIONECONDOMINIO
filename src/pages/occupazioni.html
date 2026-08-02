@@ -1,0 +1,114 @@
+<section class="page-occupazioni">
+  <div class="page-head">
+    <div>
+      <button type="button" class="btn btn-ghost" id="btn-torna-unita">
+        ← Torna alle unità
+      </button>
+      <h1 id="titolo-occupanti">Occupanti</h1>
+      <p id="sottotitolo-unita" class="muted"></p>
+    </div>
+    <button type="button" class="btn" id="btn-nuovo-occupante">
+      Nuovo occupante
+    </button>
+  </div>
+
+  <p class="form-error" id="pagina-error" hidden></p>
+
+  <div class="panel form-panel" id="pannello-form" hidden>
+    <h2 id="titolo-form">Nuovo occupante</h2>
+    <form id="form-occupante">
+      <input type="hidden" id="id-occupante" value="" />
+      <input type="hidden" id="id-unita" value="" />
+      <div class="form-grid form-grid-occupante">
+        <label class="field field-full">
+          <span>Nominativo *</span>
+          <input
+            type="text"
+            id="nominativo"
+            name="nominativo"
+            required
+            maxlength="160"
+            placeholder="Es. Mario Rossi"
+          />
+        </label>
+        <label class="field">
+          <span>Data inizio *</span>
+          <input type="date" id="data-inizio" name="dataInizio" required />
+        </label>
+        <label class="field">
+          <span>Data fine</span>
+          <input type="date" id="data-fine" name="dataFine" />
+        </label>
+        <label class="field">
+          <span>N. componenti</span>
+          <input
+            type="number"
+            id="num-componenti"
+            name="numComponenti"
+            min="1"
+            step="1"
+            value="1"
+            required
+          />
+        </label>
+        <label class="field">
+          <span>Percentuale</span>
+          <input
+            type="number"
+            id="percentuale"
+            name="percentuale"
+            min="0"
+            max="100"
+            step="0.01"
+            value="100"
+            required
+          />
+        </label>
+        <label class="field field-full">
+          <span>Note occupante</span>
+          <textarea
+            id="note-occupante"
+            name="noteOccupante"
+            maxlength="2000"
+            placeholder="Annotazioni libere"
+          ></textarea>
+        </label>
+      </div>
+      <p class="form-error" id="form-error" hidden></p>
+      <div class="form-actions">
+        <button type="submit" class="btn">Salva</button>
+        <button type="button" class="btn btn-secondary" id="btn-annulla">
+          Annulla
+        </button>
+      </div>
+    </form>
+  </div>
+
+  <div class="panel panel-attuale">
+    <h2>Occupante attuale</h2>
+    <div id="box-attuale"></div>
+  </div>
+
+  <div class="panel panel-precedenti">
+    <h2>Occupanti precedenti</h2>
+    <p class="muted" id="precedenti-vuoti" hidden>
+      Nessun occupante precedente per questa unità.
+    </p>
+    <div class="table-wrap" id="tabella-precedenti-wrap">
+      <table class="data-table" id="tabella-precedenti">
+        <thead>
+          <tr>
+            <th>Nominativo</th>
+            <th>Dal</th>
+            <th>Al</th>
+            <th class="num">Comp.</th>
+            <th class="num">%</th>
+            <th>Note</th>
+            <th class="azioni">Azioni</th>
+          </tr>
+        </thead>
+        <tbody id="corpo-precedenti"></tbody>
+      </table>
+    </div>
+  </div>
+</section>

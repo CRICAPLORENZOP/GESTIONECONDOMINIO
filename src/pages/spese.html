@@ -1,0 +1,182 @@
+<section class="page-spese">
+  <div class="page-head page-head-compatto">
+    <div class="page-head-riga">
+      <h1>Spese</h1>
+      <p class="muted">
+        Periodo, importi e gestione · prima crea le categorie in Categorie spesa.
+      </p>
+    </div>
+    <div class="page-head-azioni">
+      <div class="filtro-stato" role="group" aria-label="Filtro stato spese">
+        <button type="button" class="btn-filtro-stato is-active" data-stato="ATTIVA">
+          Attive
+        </button>
+        <button type="button" class="btn-filtro-stato" data-stato="ARCHIVIATA">
+          Archiviate
+        </button>
+        <button type="button" class="btn-filtro-stato" data-stato="TUTTE">
+          Tutte
+        </button>
+      </div>
+      <button type="button" class="btn" id="btn-nuova-spesa">Nuova spesa</button>
+    </div>
+  </div>
+
+  <div class="panel form-panel" id="pannello-form" hidden>
+    <h2 id="titolo-form">Nuova spesa</h2>
+    <form id="form-spesa">
+      <input type="hidden" id="id-spesa" value="" />
+      <div class="form-grid form-grid-spese">
+        <label class="field field-full">
+          <span>Tipologia / categoria *</span>
+          <select id="id-tipologia" name="idTipologia" required></select>
+        </label>
+        <label class="field">
+          <span>Spesa da *</span>
+          <input type="date" id="spesa-da" name="spesaDa" required />
+        </label>
+        <label class="field">
+          <span>Spesa a *</span>
+          <input type="date" id="spesa-a" name="spesaA" required />
+        </label>
+        <label class="field">
+          <span>Cifra (€) *</span>
+          <input
+            type="number"
+            id="cifra"
+            name="cifra"
+            step="0.01"
+            value="0"
+            required
+            title="Può essere negativa per i rimborsi"
+          />
+        </label>
+        <label class="field">
+          <span>Spese pagamento (€)</span>
+          <input
+            type="number"
+            id="spese-pagamento"
+            name="spesePagamento"
+            step="0.01"
+            value="0"
+          />
+        </label>
+        <label class="field">
+          <span>Totale (€)</span>
+          <input
+            type="number"
+            id="totale-spesa"
+            name="totaleSpesa"
+            step="0.01"
+            value="0"
+            readonly
+            tabindex="-1"
+          />
+        </label>
+        <label class="field">
+          <span>Stato *</span>
+          <select id="stato" name="stato" required>
+            <option value="ATTIVA" selected>ATTIVA</option>
+            <option value="ARCHIVIATA">ARCHIVIATA</option>
+          </select>
+        </label>
+        <label class="field">
+          <span>Data emissione</span>
+          <input type="date" id="data-emissione" name="dataEmissione" />
+        </label>
+        <label class="field">
+          <span>N. fattura</span>
+          <input
+            type="text"
+            id="num-fattura"
+            name="numFattura"
+            maxlength="80"
+            placeholder="Es. 12/2026"
+          />
+        </label>
+        <label class="field">
+          <span>Gestione</span>
+          <input
+            type="text"
+            id="gestione"
+            name="gestione"
+            maxlength="200"
+            placeholder="Es. Ordinaria, Straordinaria…"
+          />
+        </label>
+        <label class="field field-full">
+          <span>Descrizione</span>
+          <input
+            type="text"
+            id="descrizione"
+            name="descrizione"
+            maxlength="200"
+            placeholder="Breve descrizione della spesa"
+          />
+        </label>
+        <label class="field field-full">
+          <span>Note spesa</span>
+          <textarea
+            id="note-spesa"
+            name="noteSpesa"
+            maxlength="2000"
+            placeholder="Annotazioni libere"
+            rows="2"
+          ></textarea>
+        </label>
+      </div>
+      <p class="form-error" id="form-error" hidden></p>
+      <div class="form-actions">
+        <button type="submit" class="btn">Salva</button>
+        <button type="button" class="btn btn-secondary" id="btn-annulla">
+          Annulla
+        </button>
+      </div>
+    </form>
+  </div>
+
+  <div class="panel table-panel">
+    <div class="filtri-riga" id="filtro-categoria" hidden>
+      <div class="filtro-chip">
+        <span class="filtro-chip-lbl">Filtro</span>
+        <strong id="filtro-categoria-nome"></strong>
+        <button type="button" class="btn-chip-togli" id="btn-togli-filtro" title="Mostra tutte">×</button>
+      </div>
+    </div>
+    <p class="muted" id="spese-vuote" hidden>
+      Nessuna spesa ancora. Clicca «Nuova spesa» per iniziare.
+    </p>
+    <p class="muted" id="senza-categorie" hidden>
+      Prima crea almeno una categoria in «Categorie spesa».
+    </p>
+    <div class="table-wrap" id="tabella-wrap">
+      <table class="data-table data-table-compatta" id="tabella-spese">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Categoria</th>
+            <th>Periodo</th>
+            <th class="col-metodo" title="M = Millesimi, P = Parti">Metodo</th>
+            <th class="num">Giorni</th>
+            <th class="num">Cifra</th>
+            <th class="num">Sp. pag.</th>
+            <th class="num">Totale</th>
+            <th>Stato</th>
+            <th>Gestione</th>
+            <th>Descrizione</th>
+            <th class="azioni">Azioni</th>
+          </tr>
+        </thead>
+        <tbody id="corpo-spese"></tbody>
+        <tfoot id="piede-spese" hidden>
+          <tr>
+            <td colspan="7" class="piede-etichetta">Totale complessivo</td>
+            <td class="num piede-totale" id="totale-complessivo">0,00</td>
+            <td colspan="4"></td>
+          </tr>
+        </tfoot>
+      </table>
+    </div>
+    <p class="form-error" id="lista-error" hidden></p>
+  </div>
+</section>

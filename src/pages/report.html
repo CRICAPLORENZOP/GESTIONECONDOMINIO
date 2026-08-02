@@ -1,0 +1,54 @@
+<section class="page-report">
+  <div class="report-vista" id="vista-conteggiate">
+    <div class="report-vista-head">
+      <div class="report-vista-titoli">
+        <h1>Elenco spese ripartite</h1>
+        <p class="muted">
+          Solo spese ATTIVA e periodi non archiviati.
+          Raggruppate per Gestione e, dentro, per tipologia di spesa.
+          Doppio clic su gestione o tipologia per filtrare.
+        </p>
+      </div>
+      <div class="report-vista-meta">
+        <button type="button" class="btn btn-secondary btn-stampa-report" id="btn-stampa-report">
+          Stampa
+        </button>
+        <div class="report-totale-box" id="totale-generale">€ 0,00</div>
+      </div>
+    </div>
+
+    <div class="filtri-riga" id="filtri-riga" hidden>
+      <div class="filtro-chip" id="filtro-gestione" hidden>
+        <span class="filtro-chip-lbl">Gestione</span>
+        <strong id="filtro-gestione-nome"></strong>
+        <button type="button" class="btn-chip-togli" id="btn-togli-filtro-gestione" title="Togli filtro gestione">×</button>
+      </div>
+      <div class="filtro-chip" id="filtro-tipologia" hidden>
+        <span class="filtro-chip-lbl">Tipologia</span>
+        <strong id="filtro-tipologia-nome"></strong>
+        <button type="button" class="btn-chip-togli" id="btn-togli-filtro-tipologia" title="Togli filtro tipologia">×</button>
+      </div>
+    </div>
+
+    <div class="report-stampa-intestazione" aria-hidden="true">
+      <strong id="report-stampa-condo"></strong>
+      <span id="report-stampa-data"></span>
+    </div>
+
+    <p class="form-error" id="report-error" hidden></p>
+    <p class="muted" id="report-vuoto" hidden>
+      Nessuna spesa con periodi attivi da mostrare.
+    </p>
+
+    <div class="report-colonne" id="report-colonne" hidden>
+      <span>Genere</span>
+      <span>Emissione</span>
+      <span>Periodo da</span>
+      <span>Periodo a</span>
+      <span class="num">Giorni</span>
+      <span class="num">Importo</span>
+    </div>
+
+    <div id="report-corpo"></div>
+  </div>
+</section>

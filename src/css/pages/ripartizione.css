@@ -1,0 +1,600 @@
+.page-ripartizione .rip-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 0.4rem 0.85rem;
+  margin-bottom: 0.45rem;
+}
+
+.page-ripartizione .rip-head-titoli h1 {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: 1.15rem;
+  font-weight: 600;
+  line-height: 1.15;
+}
+
+.page-ripartizione .rip-head-titoli p {
+  margin: 0.1rem 0 0;
+  font-size: 0.78rem;
+  line-height: 1.2;
+}
+
+.page-ripartizione .rip-head-destra {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 0.45rem 0.65rem;
+  flex: 1 1 100%;
+  min-width: 0;
+}
+
+.page-ripartizione .rip-date-fields {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 0.35rem 0.55rem;
+  flex: 0 0 auto;
+}
+
+.page-ripartizione .rip-head-azioni {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: flex-end;
+  gap: 0.45rem 0.65rem;
+  flex: 0 0 auto;
+}
+
+.page-ripartizione .rip-date-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--ink-muted);
+}
+
+.page-ripartizione .rip-date-field input {
+  min-width: 8.5rem;
+  padding: 0.25rem 0.4rem;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--ink);
+}
+
+.page-ripartizione .btn-rip-date {
+  align-self: flex-end;
+  padding: 0.28rem 0.65rem;
+  font-size: 0.82rem;
+}
+
+.page-ripartizione .rip-totale-head {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.05rem;
+  padding: 0.2rem 0.55rem;
+  border: 1px solid #e0c43a;
+  border-radius: 6px;
+  background: #ffe566;
+}
+
+.page-ripartizione .rip-totale-lbl {
+  font-size: 0.62rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--ink-muted);
+}
+
+.page-ripartizione .rip-totale-head strong {
+  font-size: 1.05rem;
+  font-variant-numeric: tabular-nums;
+  line-height: 1.15;
+}
+
+.page-ripartizione .spesa-card {
+  margin-bottom: 0.55rem;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  overflow: hidden;
+  background: var(--surface);
+}
+
+.page-ripartizione .spesa-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.35rem 0.75rem;
+  padding: 0.3rem 0.45rem;
+  background: #e8eef5;
+  border-bottom: 1px solid var(--line);
+  font-size: 0.78rem;
+  line-height: 1.2;
+}
+
+.page-ripartizione .spesa-head .campo {
+  display: flex;
+  flex-direction: column;
+  gap: 0.05rem;
+  min-width: 0;
+}
+
+.page-ripartizione .spesa-head .lbl {
+  font-size: 0.62rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: var(--ink-muted);
+  letter-spacing: 0.03em;
+}
+
+.page-ripartizione .spesa-head .val {
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.page-ripartizione .spesa-head .val-genere {
+  text-transform: uppercase;
+  min-width: 7rem;
+  cursor: pointer;
+  text-decoration: underline dotted color-mix(in srgb, var(--ink-muted) 70%, transparent);
+  text-underline-offset: 0.12em;
+}
+
+.page-ripartizione .spesa-head .val-genere:hover {
+  color: var(--accent);
+}
+
+.page-ripartizione .spesa-head .val-euro {
+  color: var(--accent);
+}
+
+.page-ripartizione .periodo-blocco {
+  padding: 0.25rem 0.4rem 0.35rem;
+  border-top: 1px solid #eef1f4;
+}
+
+.page-ripartizione .periodo-blocco:first-of-type {
+  border-top: none;
+}
+
+.page-ripartizione .periodo-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.3rem 0.65rem;
+  margin-bottom: 0.2rem;
+  font-size: 0.74rem;
+}
+
+.page-ripartizione .periodo-head .campo {
+  display: flex;
+  flex-direction: column;
+  gap: 0.02rem;
+}
+
+.page-ripartizione .periodo-head .lbl {
+  font-size: 0.6rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: var(--ink-muted);
+}
+
+.page-ripartizione .periodo-head .val {
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.page-ripartizione .periodo-totale {
+  margin-left: auto;
+  font-weight: 700;
+  font-size: 0.78rem;
+}
+
+.page-ripartizione .btn-vai-spesa {
+  border: 1px solid #7eb6d9;
+  border-radius: 5px;
+  padding: 0.15rem 0.45rem;
+  background: #cfe8f7;
+  color: #1a4a66;
+  font-size: 0.68rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  cursor: pointer;
+}
+
+.page-ripartizione .btn-vai-spesa:hover {
+  background: #b7dcf0;
+}
+
+.page-ripartizione .quote-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.72rem;
+  line-height: 1.2;
+}
+
+.page-ripartizione .quote-table th {
+  padding: 0.1rem 0.3rem;
+  text-align: left;
+  font-size: 0.6rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: var(--ink-muted);
+  border-bottom: 1px solid var(--line);
+}
+
+.page-ripartizione .quote-table th.num,
+.page-ripartizione .quote-table td.num {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.page-ripartizione .quote-table td {
+  padding: 0.08rem 0.3rem;
+  border-bottom: 1px solid #f0f3f5;
+  vertical-align: middle;
+}
+
+.page-ripartizione .filtri-riga {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 0.3rem 0.4rem;
+  flex: 1 1 8rem;
+  min-width: 0;
+  margin: 0;
+  align-self: center;
+}
+
+.page-ripartizione .filtro-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  max-width: 100%;
+  padding: 0.12rem 0.2rem 0.12rem 0.4rem;
+  border: 1px solid color-mix(in srgb, var(--accent) 35%, var(--line));
+  border-radius: 999px;
+  background: var(--accent-soft);
+  font-size: 0.72rem;
+  line-height: 1.2;
+}
+
+.page-ripartizione .filtro-chip-lbl {
+  font-size: 0.58rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  color: var(--ink-muted);
+  white-space: nowrap;
+}
+
+.page-ripartizione .filtro-chip strong {
+  font-weight: 700;
+  max-width: 9rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.page-ripartizione .btn-chip-togli {
+  flex: 0 0 auto;
+  width: 1.2rem;
+  height: 1.2rem;
+  padding: 0;
+  border: none;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--ink) 12%, transparent);
+  color: var(--ink);
+  font-size: 0.85rem;
+  font-weight: 700;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.page-ripartizione .btn-chip-togli:hover {
+  background: color-mix(in srgb, var(--ink) 22%, transparent);
+}
+
+.page-ripartizione .quote-table .col-proprieta,
+.page-ripartizione .quote-table .col-nome {
+  font-weight: 600;
+  white-space: nowrap;
+  cursor: pointer;
+  text-decoration: underline dotted color-mix(in srgb, var(--ink-muted) 70%, transparent);
+  text-underline-offset: 0.15em;
+}
+
+.page-ripartizione .quote-table .col-proprieta:hover,
+.page-ripartizione .quote-table .col-nome:hover {
+  color: var(--accent);
+}
+
+.page-ripartizione .periodo-foot {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.45rem 0.85rem;
+  margin-top: 0.15rem;
+  padding: 0.15rem 0.35rem;
+  background: #f7faf8;
+  font-size: 0.72rem;
+  font-weight: 700;
+}
+
+.page-ripartizione .tot-euro-box {
+  padding: 0.08rem 0.4rem;
+  background: #ffe566;
+  border: 1px solid #e0c43a;
+  border-radius: 3px;
+  font-variant-numeric: tabular-nums;
+}
+
+.page-ripartizione .spesa-foot {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.45rem;
+  padding: 0.2rem 0.45rem;
+  background: #e3f0ea;
+  border-top: 1px solid #b7d4c6;
+  font-size: 0.78rem;
+  font-weight: 700;
+}
+
+.page-ripartizione .gestione-sep {
+  margin: 0.45rem 0 0.25rem;
+  padding: 0.15rem 0.4rem;
+  background: #ffe566;
+  border: 1px solid #e0c43a;
+  border-radius: 4px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.page-ripartizione #rip-vuoto,
+.page-ripartizione #rip-error {
+  margin: 0.25rem 0;
+  font-size: 0.85rem;
+}
+
+/* A schermo il blocco stampa resta nascosto */
+.page-ripartizione .rip-stampa {
+  display: none;
+}
+
+/* ——— Stampa / PDF A4 verticale molto compatto ——— */
+@media print {
+  @page {
+    size: A4 portrait;
+    margin: 6mm 7mm;
+  }
+
+  html,
+  body {
+    margin: 0 !important;
+    min-height: 0 !important;
+    background: #fff !important;
+    color: #000 !important;
+  }
+
+  .sidebar,
+  .page-ripartizione .rip-head,
+  .page-ripartizione .filtri-riga,
+  .page-ripartizione #rip-corpo,
+  .page-ripartizione #rip-vuoto,
+  .page-ripartizione #rip-error,
+  .page-ripartizione .btn-vai-spesa {
+    display: none !important;
+  }
+
+  .app-shell {
+    display: block !important;
+    min-height: 0 !important;
+  }
+
+  .content {
+    padding: 0 !important;
+  }
+
+  .page-root {
+    min-height: 0 !important;
+  }
+
+  .page-ripartizione,
+  .page-ripartizione * {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  .page-ripartizione .rip-stampa {
+    display: block !important;
+  }
+
+  .page-ripartizione .rip-stampa-intestazione {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 0.4rem;
+    margin: 0 0 0.15rem;
+    padding-bottom: 0.1rem;
+    border-bottom: 1px solid #888;
+    font-size: 7.5pt;
+    line-height: 1.15;
+  }
+
+  .page-ripartizione .rip-stampa-titolo {
+    margin: 0 0 0.12rem;
+    font-family: var(--font-display);
+    font-size: 11pt;
+    font-weight: 700;
+    line-height: 1.1;
+  }
+
+  .page-ripartizione .rip-stampa-totale-gen {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 0.35rem;
+    margin: 0 0 0.25rem;
+    font-size: 8pt;
+    font-weight: 700;
+    line-height: 1.15;
+  }
+
+  .page-ripartizione .rip-stampa-totale-gen strong {
+    padding: 0.05rem 0.3rem;
+    background: #ffe566;
+    border: 1px solid #e0c43a;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .page-ripartizione .rip-stampa-sez {
+    margin: 0.35rem 0 0.12rem;
+    padding: 0.08rem 0.25rem;
+    background: #ffe566;
+    border: 1px solid #e0c43a;
+    font-size: 8.5pt;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.02em;
+    line-height: 1.15;
+  }
+
+  .page-ripartizione .rip-stampa-sez-fine {
+    margin-top: 0.45rem;
+  }
+
+  .page-ripartizione .rip-stampa-vuoto {
+    margin: 0.1rem 0;
+    font-size: 7.5pt;
+  }
+
+  .page-ripartizione .rip-stampa-gestione {
+    margin: 0.22rem 0 0.08rem;
+    padding: 0.05rem 0.2rem;
+    background: #e8eef5;
+    border: 1px solid #c5d0dc;
+    font-size: 7.5pt;
+    font-weight: 700;
+    text-transform: uppercase;
+    line-height: 1.15;
+  }
+
+  .page-ripartizione .rip-stampa-spesa {
+    margin: 0 0 0.15rem;
+    border: 1px solid #bbb;
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+
+  .page-ripartizione .rip-stampa-spesa-head {
+    padding: 0.06rem 0.2rem;
+    background: #e8eef5;
+    border-bottom: 1px solid #bbb;
+    font-size: 7pt;
+    font-weight: 700;
+    line-height: 1.2;
+  }
+
+  .page-ripartizione .rip-stampa-periodo {
+    border-top: 1px solid #ddd;
+  }
+
+  .page-ripartizione .rip-stampa-periodo-head {
+    padding: 0.04rem 0.2rem 0.04rem 0.35rem;
+    background: #f4f7f5;
+    font-size: 6.5pt;
+    font-weight: 700;
+    line-height: 1.15;
+  }
+
+  .page-ripartizione .rip-stampa-quote {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 6.5pt;
+    line-height: 1.15;
+  }
+
+  .page-ripartizione .rip-stampa-quote th {
+    padding: 0.04rem 0.18rem;
+    text-align: left;
+    font-size: 5.5pt;
+    font-weight: 700;
+    text-transform: uppercase;
+    color: #444;
+    border-bottom: 1px solid #ccc;
+    background: #f7faf8;
+  }
+
+  .page-ripartizione .rip-stampa-quote td {
+    padding: 0.03rem 0.18rem;
+    border-bottom: 1px solid #eee;
+  }
+
+  .page-ripartizione .rip-stampa-quote th.num,
+  .page-ripartizione .rip-stampa-quote td.num {
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .page-ripartizione .rip-stampa-prop-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 7pt;
+    line-height: 1.2;
+  }
+
+  .page-ripartizione .rip-stampa-prop-table th {
+    padding: 0.06rem 0.2rem;
+    text-align: left;
+    font-size: 6pt;
+    font-weight: 700;
+    text-transform: uppercase;
+    border-bottom: 1px solid #999;
+    background: #e4efe8;
+  }
+
+  .page-ripartizione .rip-stampa-prop-table td {
+    padding: 0.05rem 0.2rem;
+    border-bottom: 1px solid #e5e5e5;
+    vertical-align: top;
+  }
+
+  .page-ripartizione .rip-stampa-prop-table th.num,
+  .page-ripartizione .rip-stampa-prop-table td.num {
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+  }
+
+  .page-ripartizione .rip-stampa-prop-tot {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 0.35rem;
+    margin-top: 0.15rem;
+    padding: 0.08rem 0.25rem;
+    background: #d4ebe0;
+    border: 1px solid #9fcbb5;
+    font-size: 8pt;
+    font-weight: 700;
+    line-height: 1.15;
+  }
+
+  .page-ripartizione .rip-stampa-prop-tot strong {
+    padding: 0.04rem 0.3rem;
+    background: #ffe566;
+    border: 1px solid #e0c43a;
+    font-variant-numeric: tabular-nums;
+  }
+}
