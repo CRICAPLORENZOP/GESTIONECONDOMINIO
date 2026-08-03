@@ -1,6 +1,6 @@
 [package]
 name = "gestione-condominio"
-version = "0.1.3"
+version = "0.1.4"
 description = "Gestione e ripartizione spese condominiali"
 authors = ["you"]
 edition = "2021"

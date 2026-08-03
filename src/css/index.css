@@ -1,26 +1,18 @@
 .home {
-  max-width: 780px;
+  max-width: 960px;
   margin: 0 auto;
   padding: 3.5rem 1.5rem 3rem;
 }
 
 .home-hero h1 {
-  margin: 0.2rem 0 0.8rem;
+  margin: 0 0 0.35rem;
   font-family: var(--font-display);
   font-size: clamp(2rem, 4vw, 2.8rem);
   letter-spacing: -0.02em;
 }
 
-.home-versione {
-  font-size: 0.45em;
-  font-weight: 600;
-  letter-spacing: 0.02em;
-  color: var(--ink-muted);
-  vertical-align: middle;
-}
-
 .home-kicker {
-  margin: 0;
+  margin: 0 0 0.8rem;
   text-transform: uppercase;
   letter-spacing: 0.08em;
   font-size: 0.75rem;
@@ -30,17 +22,57 @@
 
 .home-lead {
   margin: 0;
-  max-width: 36rem;
   color: var(--ink-muted);
   line-height: 1.55;
   font-size: 1.05rem;
+  white-space: nowrap;
 }
 
 .home-actions {
-  display: flex;
-  flex-wrap: wrap;
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
   gap: 0.75rem;
   margin: 2rem 0 2.5rem;
+  align-items: center;
+}
+
+.home-actions .btn {
+  min-width: 11.5rem;
+  text-align: center;
+}
+
+.home-actions #btn-nuovo {
+  justify-self: start;
+}
+
+.home-actions #btn-apri {
+  justify-self: center;
+}
+
+.home-actions #btn-esci {
+  justify-self: end;
+  background: var(--danger);
+  color: #fff;
+  border: 1px solid var(--danger);
+}
+
+.home-actions #btn-esci:hover {
+  background: color-mix(in srgb, var(--danger) 85%, #000);
+  border-color: color-mix(in srgb, var(--danger) 85%, #000);
+}
+
+@media (max-width: 640px) {
+  .home-actions {
+    grid-template-columns: 1fr;
+  }
+
+  .home-actions #btn-nuovo,
+  .home-actions #btn-apri,
+  .home-actions #btn-esci {
+    justify-self: stretch;
+    width: 100%;
+    min-width: 0;
+  }
 }
 
 .home-recenti {

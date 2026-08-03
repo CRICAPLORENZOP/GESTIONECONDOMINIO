@@ -7,7 +7,7 @@ import {
   scegliPercorsoSalvataggio,
 } from "./api.js";
 import { controllaAggiornamenti } from "./aggiornamenti.js";
-import { aggiornaTitoloFinestra, getVersioneApp } from "./versione.js";
+import { aggiornaTitoloFinestra } from "./versione.js";
 
 const listaRecenti = document.querySelector("#lista-recenti");
 const recentiVuoti = document.querySelector("#recenti-vuoti");
@@ -141,10 +141,22 @@ document.querySelector("#btn-apri").addEventListener("click", async () => {
   }
 });
 
+document.querySelector("#btn-esci").addEventListener("click", async () => {
+  try {
+    const processApi = window.__TAURI__?.process;
+    if (processApi?.exit) {
+      await processApi.exit(0);
+      return;
+    }
+    await window.__TAURI__?.webviewWindow
+      ?.getCurrentWebviewWindow?.()
+      ?.close?.();
+  } catch (err) {
+    mostraErrore(homeError, String(err));
+  }
+});
+
 async function avviaHome() {
-  const versione = await getVersioneApp();
-  const elVer = document.querySelector("#app-versione");
-  if (elVer) elVer.textContent = `v${versione}`;
   await aggiornaTitoloFinestra();
   await caricaRecenti();
   controllaAggiornamenti();
