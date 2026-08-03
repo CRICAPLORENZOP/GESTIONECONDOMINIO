@@ -381,6 +381,7 @@ fn carica_spesa_base(
                 num_fattura: row.get(9)?,
                 note_spesa: row.get(10)?,
                 gestione: row.get(11)?,
+                percorso_allegato: String::new(),
                 gruppo_spesa: row.get(12)?,
                 giorni: 0,
                 ha_periodi: false,

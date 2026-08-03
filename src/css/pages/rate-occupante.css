@@ -1,0 +1,145 @@
+.page-rate-occupante .page-head-compatto {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.4rem 0.75rem;
+  margin-bottom: 0.65rem;
+}
+
+.page-rate-occupante #btn-torna-occupanti {
+  margin: 0;
+  padding: 0.2rem 0.45rem;
+  font-size: 0.85rem;
+}
+
+.page-rate-occupante .page-head-riga {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.25rem 0.65rem;
+  min-width: 0;
+  flex: 1;
+}
+
+.page-rate-occupante .page-head-riga h1 {
+  margin: 0;
+  font-size: 1.3rem;
+  line-height: 1.15;
+}
+
+.page-rate-occupante .page-head-riga p {
+  margin: 0;
+  font-size: 0.88rem;
+}
+
+.page-rate-occupante .panel {
+  margin-bottom: 0.65rem;
+  padding: 0.55rem 0.7rem;
+}
+
+.page-rate-occupante .riepilogo-barra {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 0.55rem 0.75rem;
+}
+
+.page-rate-occupante .field-riepilogo {
+  flex: 1;
+  min-width: 12rem;
+}
+
+.page-rate-occupante .field-riepilogo span {
+  display: block;
+  margin-bottom: 0.15rem;
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  color: var(--ink-muted);
+}
+
+.page-rate-occupante .field-riepilogo select {
+  width: 100%;
+  padding: 0.35rem 0.45rem;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  font: inherit;
+}
+
+.page-rate-occupante #btn-apri-riepilogo {
+  flex-shrink: 0;
+}
+
+.page-rate-occupante .form-grid-rate {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(10rem, 1fr));
+  gap: 0.55rem 0.75rem;
+}
+
+.page-rate-occupante .field-full {
+  grid-column: 1 / -1;
+}
+
+.page-rate-occupante .field span {
+  display: block;
+  margin-bottom: 0.15rem;
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  color: var(--ink-muted);
+}
+
+.page-rate-occupante .field input,
+.page-rate-occupante .field select,
+.page-rate-occupante .field textarea {
+  width: 100%;
+  padding: 0.35rem 0.45rem;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  font: inherit;
+}
+
+.page-rate-occupante .form-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin-top: 0.65rem;
+}
+
+.page-rate-occupante .data-table td.azioni {
+  white-space: nowrap;
+}
+
+.page-rate-occupante .btn-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.85rem;
+  height: 1.85rem;
+  padding: 0;
+  border: 1px solid var(--line);
+  border-radius: 7px;
+  background: var(--surface);
+  color: var(--ink);
+  cursor: pointer;
+  vertical-align: middle;
+}
+
+.page-rate-occupante .btn-icon:hover {
+  background: var(--accent-soft);
+  border-color: var(--accent);
+}
+
+.page-rate-occupante .btn-icon svg {
+  width: 1.05rem;
+  height: 1.05rem;
+  fill: currentColor;
+}
+
+.page-rate-occupante .btn-icon.btn-elimina:hover {
+  background: color-mix(in srgb, var(--danger) 12%, #fff);
+  border-color: var(--danger);
+  color: var(--danger);
+}

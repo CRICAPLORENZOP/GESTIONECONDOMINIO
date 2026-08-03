@@ -1,0 +1,91 @@
+<section class="page-rate-occupante">
+  <div class="page-head page-head-compatto">
+    <button type="button" class="btn btn-ghost" id="btn-torna-occupanti">
+      ← Occupanti
+    </button>
+    <div class="page-head-riga">
+      <h1 id="titolo-rate">Rate condominiali</h1>
+      <p class="muted" id="sottotitolo-rate"></p>
+    </div>
+    <button type="button" class="btn" id="btn-nuova-rata">Nuova rata</button>
+  </div>
+
+  <p class="form-error" id="pagina-error" hidden></p>
+
+  <div class="panel riepilogo-barra" id="barra-riepilogo">
+    <label class="field field-riepilogo">
+      <span>Rendiconto da confrontare</span>
+      <select id="rendiconto-riepilogo">
+        <option value="">— rendiconto attivo —</option>
+      </select>
+    </label>
+    <button type="button" class="btn" id="btn-apri-riepilogo">
+      Vedi riepilogo
+    </button>
+  </div>
+
+  <div class="panel form-panel" id="pannello-form" hidden>
+    <h2 id="titolo-form">Nuova rata</h2>
+    <form id="form-rata">
+      <input type="hidden" id="id-rata" value="" />
+      <div class="form-grid form-grid-rate">
+        <label class="field">
+          <span>Rata da *</span>
+          <input type="date" id="rata-da" required />
+        </label>
+        <label class="field">
+          <span>Rata a *</span>
+          <input type="date" id="rata-a" required />
+        </label>
+        <label class="field">
+          <span>Versato (€) *</span>
+          <input type="number" id="versato" step="0.01" value="0" required />
+        </label>
+        <label class="field">
+          <span>Rendiconto</span>
+          <select id="rendiconto">
+            <option value="">— nessuno —</option>
+          </select>
+        </label>
+        <label class="field field-full">
+          <span>Note rata</span>
+          <textarea
+            id="note-rata"
+            maxlength="2000"
+            rows="2"
+            placeholder="Annotazioni libere"
+          ></textarea>
+        </label>
+      </div>
+      <p class="form-error" id="form-error" hidden></p>
+      <div class="form-actions">
+        <button type="submit" class="btn">Salva</button>
+        <button type="button" class="btn btn-secondary" id="btn-annulla">
+          Annulla
+        </button>
+      </div>
+    </form>
+  </div>
+
+  <div class="panel table-panel">
+    <p class="muted" id="rate-vuote" hidden>
+      Nessuna rata per questo occupante. Clicca «Nuova rata».
+    </p>
+    <div class="table-wrap" id="tabella-wrap">
+      <table class="data-table data-table-compatta" id="tabella-rate">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Da</th>
+            <th>A</th>
+            <th class="num">Versato</th>
+            <th>Rendiconto</th>
+            <th>Note</th>
+            <th class="azioni">Azioni</th>
+          </tr>
+        </thead>
+        <tbody id="corpo-rate"></tbody>
+      </table>
+    </div>
+  </div>
+</section>

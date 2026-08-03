@@ -1,0 +1,40 @@
+<section class="page-conguaglio-occupanti">
+  <div class="page-head page-head-compatto">
+    <button type="button" class="btn btn-ghost" id="btn-torna-occupanti">
+      ← Occupanti
+    </button>
+    <div class="page-head-riga">
+      <h1>Conguaglio</h1>
+      <p class="muted" id="sottotitolo-conguaglio"></p>
+    </div>
+  </div>
+
+  <p class="form-error" id="pagina-error" hidden></p>
+  <p class="muted" id="lista-vuota" hidden>Nessun occupante corrente.</p>
+
+  <div class="panel table-panel" id="tabella-wrap" hidden>
+    <div class="table-wrap">
+      <table class="data-table data-table-compatta" id="tabella-conguaglio">
+        <thead>
+          <tr>
+            <th>ID unità</th>
+            <th>Proprietà</th>
+            <th>Occupante</th>
+            <th class="num">Quota spettante</th>
+            <th class="num">Rate versate</th>
+            <th class="num">Differenza</th>
+          </tr>
+        </thead>
+        <tbody id="corpo-conguaglio"></tbody>
+        <tfoot>
+          <tr class="riga-totali">
+            <td colspan="3">Totali</td>
+            <td class="num" id="tot-quote">€ 0,00</td>
+            <td class="num" id="tot-rate">€ 0,00</td>
+            <td class="num" id="tot-diff">€ 0,00</td>
+          </tr>
+        </tfoot>
+      </table>
+    </div>
+  </div>
+</section>

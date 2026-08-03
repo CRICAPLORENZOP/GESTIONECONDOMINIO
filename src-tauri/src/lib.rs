@@ -8,6 +8,7 @@ use tauri::{AppHandle, Manager, State};
 use tauri_plugin_dialog::DialogExt;
 
 mod migrate;
+mod rate;
 mod report;
 mod riparto;
 
@@ -993,6 +994,9 @@ pub struct Spesa {
     pub num_fattura: String,
     pub note_spesa: String,
     pub gestione: String,
+    /// Nome file relativo nella cartella `{db}_allegati` (es. spesa_12.pdf).
+    #[serde(default)]
+    pub percorso_allegato: String,
     pub gruppo_spesa: String,
     pub giorni: i64,
     /// True se esiste almeno un periodo di riparto per questa spesa.
@@ -1096,7 +1100,8 @@ fn mappa_spesa(row: &rusqlite::Row<'_>) -> rusqlite::Result<Spesa> {
         num_fattura: row.get(9)?,
         note_spesa: row.get(10)?,
         gestione: row.get(11)?,
-        gruppo_spesa: row.get(12)?,
+        percorso_allegato: row.get(12)?,
+        gruppo_spesa: row.get(13)?,
         giorni,
         ha_periodi: false,
         archivia_parziale: false,
@@ -1120,7 +1125,7 @@ fn elenco_spese(state: State<AppState>) -> Result<Vec<Spesa>, String> {
             .prepare(
                 "SELECT s.IdSpesa, s.IdTipologia, s.SpesaDa, s.SpesaA, s.Cifra, s.SpesePagamento,
                         s.Descrizione, s.Stato, s.DataEmissione, s.NumFattura, s.NoteSpesa,
-                        s.Gestione, t.GruppoSpesa
+                        s.Gestione, s.PercorsoAllegato, t.GruppoSpesa
                  FROM spesa s
                  INNER JOIN tipologia_spesa t ON t.IdTipologiaSpesa = s.IdTipologia
                  ORDER BY t.GruppoSpesa ASC, s.SpesaDa ASC, s.IdSpesa ASC",
@@ -1172,7 +1177,7 @@ fn crea_spesa(state: State<AppState>, dati: SpesaInput) -> Result<Spesa, String>
             .query_row(
                 "SELECT s.IdSpesa, s.IdTipologia, s.SpesaDa, s.SpesaA, s.Cifra, s.SpesePagamento,
                         s.Descrizione, s.Stato, s.DataEmissione, s.NumFattura, s.NoteSpesa,
-                        s.Gestione, t.GruppoSpesa
+                        s.Gestione, s.PercorsoAllegato, t.GruppoSpesa
                  FROM spesa s
                  INNER JOIN tipologia_spesa t ON t.IdTipologiaSpesa = s.IdTipologia
                  WHERE s.IdSpesa = ?1",
@@ -1229,7 +1234,7 @@ fn aggiorna_spesa(
             .query_row(
                 "SELECT s.IdSpesa, s.IdTipologia, s.SpesaDa, s.SpesaA, s.Cifra, s.SpesePagamento,
                         s.Descrizione, s.Stato, s.DataEmissione, s.NumFattura, s.NoteSpesa,
-                        s.Gestione, t.GruppoSpesa
+                        s.Gestione, s.PercorsoAllegato, t.GruppoSpesa
                  FROM spesa s
                  INNER JOIN tipologia_spesa t ON t.IdTipologiaSpesa = s.IdTipologia
                  WHERE s.IdSpesa = ?1",
@@ -1243,15 +1248,242 @@ fn aggiorna_spesa(
 
 #[tauri::command]
 fn elimina_spesa(state: State<AppState>, id_spesa: i64) -> Result<(), String> {
-    with_db(&state, |conn, _info| {
+    let db_path = state
+        .percorso
+        .lock()
+        .map_err(|e| e.to_string())?
+        .clone()
+        .ok_or_else(|| "Nessun condominio aperto.".to_string())?;
+
+    let vecchio_rel = with_db(&state, |conn, _info| {
+        let rel: String = conn
+            .query_row(
+                "SELECT PercorsoAllegato FROM spesa WHERE IdSpesa = ?1",
+                params![id_spesa],
+                |row| row.get(0),
+            )
+            .optional()
+            .map_err(|e| e.to_string())?
+            .ok_or_else(|| "Spesa non trovata.".to_string())?;
+
         let eliminate = conn
             .execute("DELETE FROM spesa WHERE IdSpesa = ?1", params![id_spesa])
             .map_err(|e| e.to_string())?;
         if eliminate == 0 {
             return Err("Spesa non trovata.".into());
         }
-        Ok(())
+        Ok(rel)
+    })?;
+
+    if !vecchio_rel.trim().is_empty() {
+        let _ = elimina_file_allegato(&db_path, &vecchio_rel);
+    }
+    Ok(())
+}
+
+/* ——— Allegati bolletta (PDF in cartella accanto al database) ——— */
+
+fn cartella_allegati(db_path: &Path) -> PathBuf {
+    let stem = db_path
+        .file_stem()
+        .map(|s| s.to_string_lossy().to_string())
+        .unwrap_or_else(|| "condominio".into());
+    let parent = db_path.parent().unwrap_or_else(|| Path::new("."));
+    parent.join(format!("{stem}_allegati"))
+}
+
+fn assicura_cartella_allegati(db_path: &Path) -> Result<PathBuf, String> {
+    let dir = cartella_allegati(db_path);
+    fs::create_dir_all(&dir).map_err(|e| format!("Impossibile creare la cartella allegati: {e}"))?;
+    Ok(dir)
+}
+
+/// Accetta solo un nome file semplice (niente percorsi), per sicurezza.
+fn nome_allegato_sicuro(relativo: &str) -> Result<String, String> {
+    let nome = relativo.trim().replace('\\', "/");
+    if nome.is_empty() || nome.contains('/') || nome == "." || nome == ".." {
+        return Err("Nome allegato non valido.".into());
+    }
+    if Path::new(&nome).file_name().and_then(|s| s.to_str()) != Some(nome.as_str()) {
+        return Err("Nome allegato non valido.".into());
+    }
+    Ok(nome)
+}
+
+fn percorso_assoluto_allegato(db_path: &Path, relativo: &str) -> Result<PathBuf, String> {
+    let nome = nome_allegato_sicuro(relativo)?;
+    Ok(cartella_allegati(db_path).join(nome))
+}
+
+fn elimina_file_allegato(db_path: &Path, relativo: &str) -> Result<(), String> {
+    let path = percorso_assoluto_allegato(db_path, relativo)?;
+    if path.exists() {
+        fs::remove_file(&path).map_err(|e| format!("Impossibile eliminare il file allegato: {e}"))?;
+    }
+    Ok(())
+}
+
+fn estensione_pdf(path: &Path) -> bool {
+    path.extension()
+        .and_then(|e| e.to_str())
+        .map(|e| e.eq_ignore_ascii_case("pdf"))
+        .unwrap_or(false)
+}
+
+fn leggi_spesa_completa(conn: &Connection, id_spesa: i64) -> Result<Spesa, String> {
+    let spesa = conn
+        .query_row(
+            "SELECT s.IdSpesa, s.IdTipologia, s.SpesaDa, s.SpesaA, s.Cifra, s.SpesePagamento,
+                    s.Descrizione, s.Stato, s.DataEmissione, s.NumFattura, s.NoteSpesa,
+                    s.Gestione, s.PercorsoAllegato, t.GruppoSpesa
+             FROM spesa s
+             INNER JOIN tipologia_spesa t ON t.IdTipologiaSpesa = s.IdTipologia
+             WHERE s.IdSpesa = ?1",
+            params![id_spesa],
+            mappa_spesa,
+        )
+        .map_err(|_| "Spesa non trovata.".to_string())?;
+    arricchisci_flag_archivia_parziale(conn, spesa)
+}
+
+/// Copia un PDF scelto dall’utente nella cartella allegati e lo collega alla spesa.
+#[tauri::command]
+fn allega_bolletta_spesa(
+    app: AppHandle,
+    state: State<AppState>,
+    id_spesa: i64,
+) -> Result<Spesa, String> {
+    let db_path = state
+        .percorso
+        .lock()
+        .map_err(|e| e.to_string())?
+        .clone()
+        .ok_or_else(|| "Nessun condominio aperto.".to_string())?;
+
+    // Verifica che la spesa esista prima del dialog.
+    let vecchio_rel = with_db(&state, |conn, _info| {
+        let rel: String = conn
+            .query_row(
+                "SELECT PercorsoAllegato FROM spesa WHERE IdSpesa = ?1",
+                params![id_spesa],
+                |row| row.get(0),
+            )
+            .optional()
+            .map_err(|e| e.to_string())?
+            .ok_or_else(|| "Spesa non trovata.".to_string())?;
+        Ok(rel)
+    })?;
+
+    let scelto = app
+        .dialog()
+        .file()
+        .add_filter("Bolletta PDF", &["pdf"])
+        .set_title("Seleziona bolletta PDF")
+        .blocking_pick_file();
+
+    let Some(fp) = scelto else {
+        return Err("Nessun file selezionato.".into());
+    };
+    let sorgente = PathBuf::from(file_path_to_string(fp)?);
+    if !sorgente.exists() {
+        return Err("Il file selezionato non esiste.".into());
+    }
+    if !estensione_pdf(&sorgente) {
+        return Err("Puoi allegare solo file PDF.".into());
+    }
+
+    let dir = assicura_cartella_allegati(&db_path)?;
+    let nome_dest = format!("spesa_{id_spesa}.pdf");
+    let destinazione = dir.join(&nome_dest);
+
+    fs::copy(&sorgente, &destinazione)
+        .map_err(|e| format!("Impossibile copiare il PDF nella cartella allegati: {e}"))?;
+
+    // Se c’era un allegato con nome diverso, prova a rimuoverlo.
+    if !vecchio_rel.trim().is_empty() && vecchio_rel.trim() != nome_dest {
+        let _ = elimina_file_allegato(&db_path, &vecchio_rel);
+    }
+
+    with_db(&state, |conn, _info| {
+        conn.execute(
+            "UPDATE spesa SET PercorsoAllegato = ?1 WHERE IdSpesa = ?2",
+            params![nome_dest, id_spesa],
+        )
+        .map_err(|e| e.to_string())?;
+        leggi_spesa_completa(conn, id_spesa)
     })
+}
+
+/// Apre la bolletta con il programma predefinito del sistema.
+#[tauri::command]
+fn apri_bolletta_spesa(state: State<AppState>, id_spesa: i64) -> Result<(), String> {
+    let db_path = state
+        .percorso
+        .lock()
+        .map_err(|e| e.to_string())?
+        .clone()
+        .ok_or_else(|| "Nessun condominio aperto.".to_string())?;
+
+    let relativo = with_db(&state, |conn, _info| {
+        conn.query_row(
+            "SELECT PercorsoAllegato FROM spesa WHERE IdSpesa = ?1",
+            params![id_spesa],
+            |row| row.get::<_, String>(0),
+        )
+        .map_err(|_| "Spesa non trovata.".to_string())
+    })?;
+
+    if relativo.trim().is_empty() {
+        return Err("Questa spesa non ha una bolletta allegata.".into());
+    }
+
+    let path = percorso_assoluto_allegato(&db_path, &relativo)?;
+    if !path.exists() {
+        return Err(format!(
+            "File non trovato: {}. Controlla la cartella allegati accanto al database.",
+            path.display()
+        ));
+    }
+
+    tauri_plugin_opener::open_path(path, None::<&str>)
+        .map_err(|e| format!("Impossibile aprire la bolletta: {e}"))
+}
+
+/// Rimuove il collegamento e cancella il file PDF dalla cartella allegati.
+#[tauri::command]
+fn rimuovi_bolletta_spesa(state: State<AppState>, id_spesa: i64) -> Result<Spesa, String> {
+    let db_path = state
+        .percorso
+        .lock()
+        .map_err(|e| e.to_string())?
+        .clone()
+        .ok_or_else(|| "Nessun condominio aperto.".to_string())?;
+
+    let vecchio_rel = with_db(&state, |conn, _info| {
+        let rel: String = conn
+            .query_row(
+                "SELECT PercorsoAllegato FROM spesa WHERE IdSpesa = ?1",
+                params![id_spesa],
+                |row| row.get(0),
+            )
+            .optional()
+            .map_err(|e| e.to_string())?
+            .ok_or_else(|| "Spesa non trovata.".to_string())?;
+
+        conn.execute(
+            "UPDATE spesa SET PercorsoAllegato = '' WHERE IdSpesa = ?1",
+            params![id_spesa],
+        )
+        .map_err(|e| e.to_string())?;
+
+        Ok(rel)
+    })?;
+
+    if !vecchio_rel.trim().is_empty() {
+        let _ = elimina_file_allegato(&db_path, &vecchio_rel);
+    }
+
+    with_db(&state, |conn, _info| leggi_spesa_completa(conn, id_spesa))
 }
 
 #[tauri::command]
@@ -1358,6 +1590,9 @@ pub fn run() {
             crea_spesa,
             aggiorna_spesa,
             elimina_spesa,
+            allega_bolletta_spesa,
+            apri_bolletta_spesa,
+            rimuovi_bolletta_spesa,
             riparto::dettaglio_riparto_spesa,
             riparto::proponi_periodo_spesa,
             riparto::crea_periodo_spesa,
@@ -1369,6 +1604,13 @@ pub fn run() {
             report::report_ripartizione_archiviati_per_rendiconto,
             report::report_ripartizione_spese_conteggiate,
             report::report_riepilogo_ripartizione,
+            rate::elenco_occupanti_correnti,
+            rate::elenco_rate_occupante,
+            rate::crea_rata_condominiale,
+            rate::aggiorna_rata_condominiale,
+            rate::elimina_rata_condominiale,
+            rate::riepilogo_rendiconto_occupante,
+            rate::conguaglio_occupanti,
             elenco_recenti,
             rimuovi_recente,
             scegli_percorso_salvataggio,

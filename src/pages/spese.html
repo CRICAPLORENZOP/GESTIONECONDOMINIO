@@ -124,6 +124,25 @@
             rows="2"
           ></textarea>
         </label>
+        <div class="field field-full allegato-box" id="allegato-box" hidden>
+          <span class="allegato-lbl">Bolletta PDF</span>
+          <p class="muted allegato-hint" id="allegato-hint">
+            Dopo aver salvato la spesa puoi allegare il PDF. I file stanno nella cartella
+            «…_allegati» accanto al database.
+          </p>
+          <p class="allegato-nome" id="allegato-nome" hidden></p>
+          <div class="allegato-azioni">
+            <button type="button" class="btn btn-secondary" id="btn-allega-bolletta">
+              Allega / Sostituisci
+            </button>
+            <button type="button" class="btn btn-secondary" id="btn-apri-bolletta" hidden>
+              Apri PDF
+            </button>
+            <button type="button" class="btn btn-ghost" id="btn-rimuovi-bolletta" hidden>
+              Rimuovi
+            </button>
+          </div>
+        </div>
       </div>
       <p class="form-error" id="form-error" hidden></p>
       <div class="form-actions">

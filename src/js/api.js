@@ -105,6 +105,18 @@ export async function eliminaSpesa(idSpesa) {
   return getInvoke()("elimina_spesa", { idSpesa });
 }
 
+export async function allegaBollettaSpesa(idSpesa) {
+  return getInvoke()("allega_bolletta_spesa", { idSpesa });
+}
+
+export async function apriBollettaSpesa(idSpesa) {
+  return getInvoke()("apri_bolletta_spesa", { idSpesa });
+}
+
+export async function rimuoviBollettaSpesa(idSpesa) {
+  return getInvoke()("rimuovi_bolletta_spesa", { idSpesa });
+}
+
 export async function dettaglioRipartoSpesa(idSpesa) {
   return getInvoke()("dettaglio_riparto_spesa", { idSpesa });
 }
@@ -154,6 +166,39 @@ export async function reportRipartizioneSpeseConteggiate(da = "", a = "") {
 
 export async function reportRiepilogoRipartizione() {
   return getInvoke()("report_riepilogo_ripartizione");
+}
+
+export async function elencoOccupantiCorrenti() {
+  return getInvoke()("elenco_occupanti_correnti");
+}
+
+export async function elencoRateOccupante(idOccupante) {
+  return getInvoke()("elenco_rate_occupante", { idOccupante });
+}
+
+export async function creaRataCondominiale(dati) {
+  return getInvoke()("crea_rata_condominiale", { dati });
+}
+
+export async function aggiornaRataCondominiale(idRata, dati) {
+  return getInvoke()("aggiorna_rata_condominiale", { idRata, dati });
+}
+
+export async function eliminaRataCondominiale(idRata) {
+  return getInvoke()("elimina_rata_condominiale", { idRata });
+}
+
+export async function riepilogoRendicontoOccupante(idOccupante, rendiconto) {
+  return getInvoke()("riepilogo_rendiconto_occupante", {
+    idOccupante,
+    rendiconto: rendiconto || "",
+  });
+}
+
+export async function conguaglioOccupanti(rendiconto) {
+  return getInvoke()("conguaglio_occupanti", {
+    rendiconto: rendiconto || "",
+  });
 }
 
 export async function elencoRecenti() {

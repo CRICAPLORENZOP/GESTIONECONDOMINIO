@@ -1,0 +1,99 @@
+.page-riepilogo-rend-occ .page-head-compatto {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.4rem 0.75rem;
+  margin-bottom: 0.65rem;
+}
+
+.page-riepilogo-rend-occ #btn-torna-rate {
+  margin: 0;
+  padding: 0.2rem 0.45rem;
+  font-size: 0.85rem;
+}
+
+.page-riepilogo-rend-occ .page-head-riga {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.25rem 0.65rem;
+  min-width: 0;
+  flex: 1;
+}
+
+.page-riepilogo-rend-occ .page-head-riga h1 {
+  margin: 0;
+  font-size: 1.3rem;
+  line-height: 1.15;
+}
+
+.page-riepilogo-rend-occ .page-head-riga p {
+  margin: 0;
+  font-size: 0.88rem;
+}
+
+.page-riepilogo-rend-occ .riepilogo-panel {
+  max-width: 28rem;
+  padding: 0.85rem 1rem;
+}
+
+.page-riepilogo-rend-occ .riepilogo-rendiconto-lbl {
+  margin: 0 0 0.85rem;
+  font-size: 0.95rem;
+}
+
+.page-riepilogo-rend-occ .riepilogo-cifre {
+  margin: 0;
+  display: grid;
+  gap: 0.55rem;
+}
+
+.page-riepilogo-rend-occ .riepilogo-riga {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 0.35rem 1rem;
+  padding: 0.45rem 0;
+  border-bottom: 1px solid var(--line);
+}
+
+.page-riepilogo-rend-occ .riepilogo-riga dt {
+  margin: 0;
+  font-size: 0.88rem;
+  color: var(--ink-muted);
+}
+
+.page-riepilogo-rend-occ .riepilogo-riga dd {
+  margin: 0;
+  font-size: 1.05rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.page-riepilogo-rend-occ .riepilogo-riga-diff {
+  border-bottom: none;
+  padding-top: 0.65rem;
+}
+
+.page-riepilogo-rend-occ .riepilogo-riga-diff dt {
+  font-weight: 600;
+  color: var(--ink);
+}
+
+.page-riepilogo-rend-occ .diff-positiva {
+  color: #1a7a3a;
+}
+
+.page-riepilogo-rend-occ .diff-negativa {
+  color: var(--danger);
+}
+
+.page-riepilogo-rend-occ .diff-zero {
+  color: var(--ink);
+}
+
+.page-riepilogo-rend-occ .riepilogo-nota {
+  margin: 0.65rem 0 0;
+  font-size: 0.85rem;
+}

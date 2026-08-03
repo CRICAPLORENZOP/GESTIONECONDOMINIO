@@ -1,0 +1,69 @@
+.page-conguaglio-occupanti .page-head-compatto {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.4rem 0.75rem;
+  margin-bottom: 0.65rem;
+}
+
+.page-conguaglio-occupanti #btn-torna-occupanti {
+  margin: 0;
+  padding: 0.2rem 0.45rem;
+  font-size: 0.85rem;
+}
+
+.page-conguaglio-occupanti .page-head-riga {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.25rem 0.65rem;
+  min-width: 0;
+  flex: 1;
+}
+
+.page-conguaglio-occupanti .page-head-riga h1 {
+  margin: 0;
+  font-size: 1.3rem;
+  line-height: 1.15;
+}
+
+.page-conguaglio-occupanti .page-head-riga p {
+  margin: 0;
+  font-size: 0.88rem;
+}
+
+.page-conguaglio-occupanti .panel {
+  margin-bottom: 0.65rem;
+  padding: 0.55rem 0.7rem;
+}
+
+.page-conguaglio-occupanti .data-table td.num,
+.page-conguaglio-occupanti .data-table th.num {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.page-conguaglio-occupanti .diff-negativa {
+  color: var(--danger);
+  font-weight: 700;
+}
+
+.page-conguaglio-occupanti .diff-positiva {
+  color: #1a7a3a;
+  font-weight: 700;
+}
+
+.page-conguaglio-occupanti .riga-totali td {
+  font-weight: 700;
+  border-top: 2px solid var(--line);
+  padding-top: 0.55rem;
+}
+
+.page-conguaglio-occupanti .riga-totali .diff-negativa {
+  color: var(--danger);
+}
+
+.page-conguaglio-occupanti .riga-totali .diff-positiva {
+  color: #1a7a3a;
+}

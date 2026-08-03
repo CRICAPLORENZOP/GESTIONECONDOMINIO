@@ -1,9 +1,12 @@
 import {
   aggiornaSpesa,
+  allegaBollettaSpesa,
+  apriBollettaSpesa,
   creaSpesa,
   eliminaSpesa,
   elencoSpese,
   elencoTipologieSpesa,
+  rimuoviBollettaSpesa,
 } from "../api.js";
 import { chiediConferma } from "../conferma.js";
 
@@ -114,9 +117,11 @@ function mostraErrore(el, messaggio) {
   if (!messaggio) {
     el.hidden = true;
     el.textContent = "";
+    el.style.color = "";
     return;
   }
   el.hidden = false;
+  el.style.color = "";
   el.textContent = messaggio;
 }
 
@@ -171,6 +176,48 @@ function popolaTipologie(selezionato = null) {
   }
 }
 
+function haBolletta(spesa) {
+  return Boolean((spesa?.percorsoAllegato || "").trim());
+}
+
+function aggiornaUiAllegato(spesa) {
+  const box = $("#allegato-box");
+  const hint = $("#allegato-hint");
+  const nome = $("#allegato-nome");
+  const btnApri = $("#btn-apri-bolletta");
+  const btnRimuovi = $("#btn-rimuovi-bolletta");
+  if (!box) return;
+
+  if (inModificaId == null) {
+    box.hidden = true;
+    return;
+  }
+
+  box.hidden = false;
+  const file = (spesa?.percorsoAllegato || "").trim();
+  if (file) {
+    if (hint) hint.hidden = true;
+    if (nome) {
+      nome.hidden = false;
+      nome.textContent = `Allegata: ${file}`;
+    }
+    if (btnApri) btnApri.hidden = false;
+    if (btnRimuovi) btnRimuovi.hidden = false;
+  } else {
+    if (hint) {
+      hint.hidden = false;
+      hint.textContent =
+        "Nessuna bolletta. Clicca «Allega / Sostituisci» per scegliere un PDF. I file stanno nella cartella «…_allegati» accanto al database.";
+    }
+    if (nome) {
+      nome.hidden = true;
+      nome.textContent = "";
+    }
+    if (btnApri) btnApri.hidden = true;
+    if (btnRimuovi) btnRimuovi.hidden = true;
+  }
+}
+
 function apriForm(spesa = null) {
   if (!tipologieCache.length) {
     mostraErrore(
@@ -200,6 +247,7 @@ function apriForm(spesa = null) {
     $("#note-spesa").value = spesa.noteSpesa || "";
     $("#gestione").value = spesa.gestione || "";
     aggiornaCampoTotale();
+    aggiornaUiAllegato(spesa);
   } else {
     inModificaId = null;
     titolo.textContent = "Nuova spesa";
@@ -211,6 +259,7 @@ function apriForm(spesa = null) {
     $("#gestione").value = "";
     popolaTipologie(filtroTipologiaId);
     aggiornaCampoTotale();
+    aggiornaUiAllegato(null);
   }
 
   pannello.hidden = false;
@@ -222,6 +271,7 @@ function chiudiForm() {
   inModificaId = null;
   $("#form-spesa").reset();
   $("#stato").value = STATO_DEFAULT;
+  aggiornaUiAllegato(null);
   mostraErrore($("#form-error"), "");
 }
 
@@ -330,6 +380,11 @@ async function ricaricaLista() {
               <path d="M4 17.5V20h2.5L18.1 8.4l-2.5-2.5L4 17.5Zm14.7-10.2c.4-.4.4-1 0-1.4l-1.6-1.6a1 1 0 0 0-1.4 0l-1.3 1.3 2.5 2.5 1.8-1.8Z"/>
             </svg>
           </button>
+          <button type="button" class="btn-icon btn-bolletta ${haBolletta(s) ? "has-allegato" : ""}" title="${haBolletta(s) ? "Apri bolletta PDF" : "Allega bolletta PDF"}" aria-label="Bolletta">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-6-6Zm0 2.5L17.5 8H14V4.5ZM8 12h8v1.5H8V12Zm0 3.5h8V17H8v-1.5Zm0-7h5V10H8V8.5Z"/>
+            </svg>
+          </button>
           <button type="button" class="btn-icon btn-elimina" title="Elimina" aria-label="Elimina">
             <svg viewBox="0 0 24 24" aria-hidden="true">
               <path d="M6.7 5.3 12 10.6l5.3-5.3 1.4 1.4L13.4 12l5.3 5.3-1.4 1.4L12 13.4l-5.3 5.3-1.4-1.4L10.6 12 5.3 6.7l1.4-1.4Z"/>
@@ -367,6 +422,25 @@ async function ricaricaLista() {
       celle[9].textContent = s.gestione || "—";
       celle[10].textContent = s.descrizione || "—";
 
+      tr.querySelector(".btn-bolletta").addEventListener("click", async () => {
+        mostraErrore($("#lista-error"), "");
+        try {
+          if (haBolletta(s)) {
+            await apriBollettaSpesa(s.idSpesa);
+          } else {
+            await allegaBollettaSpesa(s.idSpesa);
+            await ricaricaLista();
+            if (inModificaId === s.idSpesa) {
+              const aggiornata = (await elencoSpese()).find((x) => x.idSpesa === s.idSpesa);
+              if (aggiornata) aggiornaUiAllegato(aggiornata);
+            }
+          }
+        } catch (err) {
+          const msg = String(err);
+          if (msg.includes("Nessun file selezionato")) return;
+          mostraErrore($("#lista-error"), msg);
+        }
+      });
       tr.querySelector(".btn-riparto").addEventListener("click", () => {
         window.apriRipartoSpesa?.(s.idSpesa);
       });
@@ -423,11 +497,64 @@ export async function onEnter(pageRoot) {
 
     try {
       if (inModificaId == null) {
-        await creaSpesa(dati);
+        const creata = await creaSpesa(dati);
+        // Resta in modifica così puoi allegare subito la bolletta.
+        apriForm(creata);
+        mostraErrore($("#form-error"), "");
+        const okMsg = $("#form-error");
+        if (okMsg) {
+          okMsg.hidden = false;
+          okMsg.style.color = "var(--accent)";
+          okMsg.textContent =
+            "Spesa salvata. Ora puoi allegare la bolletta PDF qui sotto.";
+        }
+        await ricaricaLista();
       } else {
         await aggiornaSpesa(inModificaId, dati);
+        chiudiForm();
+        await ricaricaLista();
       }
-      chiudiForm();
+    } catch (err) {
+      const errEl = $("#form-error");
+      if (errEl) errEl.style.color = "";
+      mostraErrore($("#form-error"), String(err));
+    }
+  });
+
+  $("#btn-allega-bolletta")?.addEventListener("click", async () => {
+    if (inModificaId == null) return;
+    mostraErrore($("#form-error"), "");
+    const errEl = $("#form-error");
+    if (errEl) errEl.style.color = "";
+    try {
+      const aggiornata = await allegaBollettaSpesa(inModificaId);
+      aggiornaUiAllegato(aggiornata);
+      await ricaricaLista();
+    } catch (err) {
+      const msg = String(err);
+      if (msg.includes("Nessun file selezionato")) return;
+      mostraErrore($("#form-error"), msg);
+    }
+  });
+
+  $("#btn-apri-bolletta")?.addEventListener("click", async () => {
+    if (inModificaId == null) return;
+    mostraErrore($("#form-error"), "");
+    try {
+      await apriBollettaSpesa(inModificaId);
+    } catch (err) {
+      mostraErrore($("#form-error"), String(err));
+    }
+  });
+
+  $("#btn-rimuovi-bolletta")?.addEventListener("click", async () => {
+    if (inModificaId == null) return;
+    const ok = await chiediConferma("Rimuovere la bolletta allegata?");
+    if (!ok) return;
+    mostraErrore($("#form-error"), "");
+    try {
+      const aggiornata = await rimuoviBollettaSpesa(inModificaId);
+      aggiornaUiAllegato(aggiornata);
       await ricaricaLista();
     } catch (err) {
       mostraErrore($("#form-error"), String(err));

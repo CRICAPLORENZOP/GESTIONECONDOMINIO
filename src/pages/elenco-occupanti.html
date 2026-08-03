@@ -1,0 +1,45 @@
+<section class="page-elenco-occupanti">
+  <div class="page-head page-head-compatto">
+    <div class="page-head-riga">
+      <h1>Elenco Occupanti</h1>
+      <p class="muted">
+        Occupanti correnti (senza data fine, oppure ancora in corso). Usa «Rate» per gestirne i versamenti.
+      </p>
+    </div>
+    <div class="conguaglio-barra">
+      <label class="field field-conguaglio">
+        <span>Rendiconto</span>
+        <select id="rendiconto-conguaglio">
+          <option value="">— rendiconto attivo —</option>
+        </select>
+      </label>
+      <button type="button" class="btn" id="btn-conguaglio">Conguaglio</button>
+    </div>
+  </div>
+
+  <p class="form-error" id="lista-error" hidden></p>
+  <p class="muted" id="lista-vuota" hidden>
+    Nessun occupante corrente.
+  </p>
+
+  <div class="panel table-panel" id="tabella-wrap">
+    <div class="table-wrap">
+      <table class="data-table data-table-compatta" id="tabella-occupanti">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Identificativo</th>
+            <th>Proprietà</th>
+            <th>Occupante</th>
+            <th>Dal</th>
+            <th>Al</th>
+            <th class="num">Comp.</th>
+            <th class="num">%</th>
+            <th class="azioni">Azioni</th>
+          </tr>
+        </thead>
+        <tbody id="corpo-occupanti"></tbody>
+      </table>
+    </div>
+  </div>
+</section>

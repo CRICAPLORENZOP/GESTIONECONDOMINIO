@@ -11,7 +11,7 @@
 use rusqlite::{Connection, OptionalExtension, params};
 
 /// Versione attuale dello schema. Aumentala quando cambi le tabelle.
-pub const SCHEMA_VERSION: i32 = 13;
+pub const SCHEMA_VERSION: i32 = 15;
 
 pub fn leggi_versione(conn: &Connection) -> Result<i32, String> {
     let valore: Option<String> = conn
@@ -104,6 +104,7 @@ pub fn crea_schema_attuale(conn: &Connection) -> Result<(), String> {
             NumFattura TEXT NOT NULL DEFAULT '',
             NoteSpesa TEXT NOT NULL DEFAULT '',
             Gestione TEXT NOT NULL DEFAULT '',
+            PercorsoAllegato TEXT NOT NULL DEFAULT '',
             FOREIGN KEY (IdTipologia) REFERENCES tipologia_spesa(IdTipologiaSpesa)
         );
 
@@ -130,6 +131,17 @@ pub fn crea_schema_attuale(conn: &Connection) -> Result<(), String> {
             BaseCalcolo REAL NOT NULL DEFAULT 0,
             Importo REAL NOT NULL DEFAULT 0,
             FOREIGN KEY (IdPeriodo) REFERENCES periodo_spesa(IdPeriodo) ON DELETE CASCADE
+        );
+
+        CREATE TABLE IF NOT EXISTS rate_condominiali (
+            IdRata INTEGER PRIMARY KEY AUTOINCREMENT,
+            IdOccupante INTEGER NOT NULL,
+            RataDa TEXT NOT NULL,
+            RataA TEXT NOT NULL,
+            Versato REAL NOT NULL DEFAULT 0,
+            NoteRata TEXT NOT NULL DEFAULT '',
+            Rendiconto TEXT NOT NULL DEFAULT '',
+            FOREIGN KEY (IdOccupante) REFERENCES occupante(IdOccupante) ON DELETE CASCADE
         );
         ",
     )
@@ -189,6 +201,8 @@ fn applica_migrazione(conn: &Connection, verso: i32) -> Result<(), String> {
         11 => migrate_to_11(conn),
         12 => migrate_to_12(conn),
         13 => migrate_to_13(conn),
+        14 => migrate_to_14(conn),
+        15 => migrate_to_15(conn),
         altra => Err(format!("Migrazione verso la versione {altra} non definita.")),
     }
 }
@@ -425,6 +439,32 @@ fn migrate_to_12(conn: &Connection) -> Result<(), String> {
 /// Versione 13: campo Gestione sulle spese (utile nei report).
 fn migrate_to_13(conn: &Connection) -> Result<(), String> {
     aggiungi_colonna_se_manca(conn, "spesa", "Gestione", "TEXT NOT NULL DEFAULT ''")?;
+    Ok(())
+}
+
+/// Versione 14: percorso relativo del PDF bolletta (cartella allegati accanto al .db).
+fn migrate_to_14(conn: &Connection) -> Result<(), String> {
+    aggiungi_colonna_se_manca(conn, "spesa", "PercorsoAllegato", "TEXT NOT NULL DEFAULT ''")?;
+    Ok(())
+}
+
+/// Versione 15: rate condominiali collegate agli occupanti.
+fn migrate_to_15(conn: &Connection) -> Result<(), String> {
+    conn.execute_batch(
+        "
+        CREATE TABLE IF NOT EXISTS rate_condominiali (
+            IdRata INTEGER PRIMARY KEY AUTOINCREMENT,
+            IdOccupante INTEGER NOT NULL,
+            RataDa TEXT NOT NULL,
+            RataA TEXT NOT NULL,
+            Versato REAL NOT NULL DEFAULT 0,
+            NoteRata TEXT NOT NULL DEFAULT '',
+            Rendiconto TEXT NOT NULL DEFAULT '',
+            FOREIGN KEY (IdOccupante) REFERENCES occupante(IdOccupante) ON DELETE CASCADE
+        );
+        ",
+    )
+    .map_err(|e| format!("Creazione tabella rate_condominiali fallita: {e}"))?;
     Ok(())
 }
 

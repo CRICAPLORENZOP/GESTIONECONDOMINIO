@@ -1,0 +1,41 @@
+<section class="page-riepilogo-rend-occ">
+  <div class="page-head page-head-compatto">
+    <button type="button" class="btn btn-ghost" id="btn-torna-rate">
+      ← Rate
+    </button>
+    <div class="page-head-riga">
+      <h1 id="titolo-riepilogo">Riepilogo rendiconto</h1>
+      <p class="muted" id="sottotitolo-riepilogo"></p>
+    </div>
+  </div>
+
+  <p class="form-error" id="pagina-error" hidden></p>
+
+  <div class="panel riepilogo-panel" id="pannello-riepilogo" hidden>
+    <p class="riepilogo-rendiconto-lbl">
+      <span id="lbl-tipo-rendiconto">Rendiconto:</span>
+      <strong id="val-rendiconto"></strong>
+    </p>
+
+    <dl class="riepilogo-cifre">
+      <div class="riepilogo-riga">
+        <dt id="lbl-totale-rendiconto">Totale del rendiconto</dt>
+        <dd id="val-totale-rendiconto">€ 0,00</dd>
+      </div>
+      <div class="riepilogo-riga">
+        <dt>Quota di questo occupante</dt>
+        <dd id="val-quota-occupante">€ 0,00</dd>
+      </div>
+      <div class="riepilogo-riga">
+        <dt id="lbl-rate-versate">Somma rate versate</dt>
+        <dd id="val-rate-versate">€ 0,00</dd>
+      </div>
+      <div class="riepilogo-riga riepilogo-riga-diff">
+        <dt>Differenza (quota − versato)</dt>
+        <dd id="val-differenza">€ 0,00</dd>
+      </div>
+    </dl>
+
+    <p class="muted riepilogo-nota" id="nota-differenza"></p>
+  </div>
+</section>

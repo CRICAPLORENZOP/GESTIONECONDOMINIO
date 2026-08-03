@@ -71,6 +71,26 @@ const PAGINE = {
     css: "./css/pages/riepilogo.css",
     js: "./pages/riepilogo.js",
   },
+  "elenco-occupanti": {
+    html: "./pages/elenco-occupanti.html",
+    css: "./css/pages/elenco-occupanti.css",
+    js: "./pages/elenco-occupanti.js",
+  },
+  "rate-occupante": {
+    html: "./pages/rate-occupante.html",
+    css: "./css/pages/rate-occupante.css",
+    js: "./pages/rate-occupante.js",
+  },
+  "riepilogo-rendiconto-occupante": {
+    html: "./pages/riepilogo-rendiconto-occupante.html",
+    css: "./css/pages/riepilogo-rendiconto-occupante.css",
+    js: "./pages/riepilogo-rendiconto-occupante.js",
+  },
+  "conguaglio-occupanti": {
+    html: "./pages/conguaglio-occupanti.html",
+    css: "./css/pages/conguaglio-occupanti.css",
+    js: "./pages/conguaglio-occupanti.js",
+  },
 };
 
 function pageRootEl() {
@@ -154,6 +174,15 @@ async function mostraPagina(nome) {
   if (nome === "archivio-ripartizione") {
     navItems.forEach((btn) => {
       btn.classList.toggle("is-active", btn.dataset.page === "archivio-rendiconti");
+    });
+  }
+  if (
+    nome === "rate-occupante" ||
+    nome === "riepilogo-rendiconto-occupante" ||
+    nome === "conguaglio-occupanti"
+  ) {
+    navItems.forEach((btn) => {
+      btn.classList.toggle("is-active", btn.dataset.page === "elenco-occupanti");
     });
   }
 
