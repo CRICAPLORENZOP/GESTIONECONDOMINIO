@@ -50,7 +50,7 @@ function etichettaFiltriAttivi() {
     const u = datiCache?.unita?.find((x) => x.idUnita === filtroUnitaId);
     pezzi.push(
       u
-        ? `unità «${u.proprieta}» (ID ${u.idUnita})`
+        ? `unità «${u.proprieta}» (ID ${(u.identificativo || "").trim() || u.idUnita})`
         : `unità ID ${filtroUnitaId}`
     );
   }
@@ -71,7 +71,7 @@ function aggiornaBannerFiltro() {
       const u = datiCache?.unita?.find((x) => x.idUnita === filtroUnitaId);
       chipUnita.hidden = false;
       nomeUnita.textContent = u
-        ? `${u.proprieta} (ID ${u.idUnita})`
+        ? `${u.proprieta} (ID ${(u.identificativo || "").trim() || u.idUnita})`
         : `ID ${filtroUnitaId}`;
     }
   }
@@ -272,7 +272,10 @@ function renderCardUnita(u, corpo) {
     <span class="unita-totale"></span>
   `;
   head.querySelector(".unita-proprieta").textContent = u.proprieta;
-  head.querySelector(".unita-meta").textContent = `Unità ID ${u.idUnita}`;
+  const ident = (u.identificativo || "").trim();
+  head.querySelector(".unita-meta").textContent = ident
+    ? `ID ${ident}`
+    : `ID —`;
   head.querySelector(".unita-totale").textContent = `€ ${formatEuro(u.totale)}`;
   head.addEventListener("dblclick", () => {
     applicaFiltroUnita(u.idUnita);

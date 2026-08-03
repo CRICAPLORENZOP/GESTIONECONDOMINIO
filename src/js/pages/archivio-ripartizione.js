@@ -53,6 +53,23 @@ function nomeOccupante(q) {
   return (q.nominativo || "").trim();
 }
 
+/** Ordina le quote per Identificativo (poi Sub, Proprietà, Occupante). */
+function ordinaQuotePerIdentificativo(quote) {
+  return [...quote].sort((a, b) => {
+    const idA = (a.identificativo || "").trim();
+    const idB = (b.identificativo || "").trim();
+    const cmpId = idA.localeCompare(idB, "it", { numeric: true, sensitivity: "base" });
+    if (cmpId !== 0) return cmpId;
+    const subA = (a.subalterno || "").trim();
+    const subB = (b.subalterno || "").trim();
+    const cmpSub = subA.localeCompare(subB, "it", { numeric: true, sensitivity: "base" });
+    if (cmpSub !== 0) return cmpSub;
+    const cmpProp = nomeProprieta(a).localeCompare(nomeProprieta(b), "it");
+    if (cmpProp !== 0) return cmpProp;
+    return nomeOccupante(a).localeCompare(nomeOccupante(b), "it");
+  });
+}
+
 function haFiltroAttivo() {
   return filtroProprieta != null || filtroOccupante != null;
 }
@@ -65,6 +82,8 @@ function etichettaFiltriAttivi() {
 }
 
 function aggiornaBannerFiltro() {
+  const riga = $("#filtri-riga");
+
   const bannerProp = $("#filtro-proprieta");
   const nomeProp = $("#filtro-proprieta-nome");
   if (bannerProp && nomeProp) {
@@ -87,6 +106,12 @@ function aggiornaBannerFiltro() {
       bannerOcc.hidden = false;
       nomeOcc.textContent = filtroOccupante;
     }
+  }
+
+  if (riga) {
+    // La riga resta nello spazio centrale (tra titoli e Stampa);
+    // si nascondono solo le singole chip.
+    riga.hidden = false;
   }
 }
 
@@ -163,7 +188,7 @@ function renderDati(dati) {
 
     const periodiVisibili = [];
     for (const p of spesa.periodi) {
-      const quote = p.quote.filter(quotePassanoFiltri);
+      const quote = ordinaQuotePerIdentificativo(p.quote.filter(quotePassanoFiltri));
       if (!quote.length) continue;
       periodiVisibili.push({ periodo: p, quote });
     }
@@ -229,6 +254,8 @@ function renderDati(dati) {
       table.innerHTML = `
         <thead>
           <tr>
+            <th>ID</th>
+            <th>Sub.</th>
             <th>Proprietà</th>
             <th>Occupante</th>
             <th class="num">%</th>
@@ -245,6 +272,8 @@ function renderDati(dati) {
       for (const q of quote) {
         const tr = document.createElement("tr");
         tr.innerHTML = `
+          <td class="col-id"></td>
+          <td class="col-sub"></td>
           <td class="col-proprieta"></td>
           <td class="col-nome"></td>
           <td class="num"></td>
@@ -256,22 +285,24 @@ function renderDati(dati) {
         const td = tr.children;
         const prop = nomeProprieta(q) || "—";
         const occ = nomeOccupante(q) || "—";
-        td[0].textContent = prop;
-        td[0].title = "Doppio clic: mostra solo questa proprietà";
-        td[0].addEventListener("dblclick", () => applicaFiltroProprieta(prop));
-        td[1].textContent = occ;
-        td[1].title = "Doppio clic: mostra solo questo occupante";
-        td[1].addEventListener("dblclick", () => applicaFiltroOccupante(occ));
-        td[2].textContent = formatNum(q.percentuale, 2);
+        td[0].textContent = (q.identificativo || "").trim() || "—";
+        td[1].textContent = (q.subalterno || "").trim() || "—";
+        td[2].textContent = prop;
+        td[2].title = "Doppio clic: mostra solo questa proprietà";
+        td[2].addEventListener("dblclick", () => applicaFiltroProprieta(prop));
+        td[3].textContent = occ;
+        td[3].title = "Doppio clic: mostra solo questo occupante";
+        td[3].addEventListener("dblclick", () => applicaFiltroOccupante(occ));
+        td[4].textContent = formatNum(q.percentuale, 2);
         if (usaMillesimi) {
-          td[3].textContent = "";
-          td[4].textContent = formatNum(q.peso, 2);
+          td[5].textContent = "";
+          td[6].textContent = formatNum(q.peso, 2);
         } else {
-          td[3].textContent = formatNum(q.peso, 0);
-          td[4].textContent = "";
+          td[5].textContent = formatNum(q.peso, 0);
+          td[6].textContent = "";
         }
-        td[5].textContent = formatNum(q.baseCalcolo, 2);
-        td[6].textContent = `€ ${formatEuro(q.importo)}`;
+        td[7].textContent = formatNum(q.baseCalcolo, 2);
+        td[8].textContent = `€ ${formatEuro(q.importo)}`;
         sommaQuote += Number(q.importo) || 0;
         tbody.appendChild(tr);
       }
@@ -408,7 +439,7 @@ function costruisciSezioneSpesePeriodi(contenitore, dati) {
     const usaMillesimi = spesa.ripartizione === "Millesimi";
     const periodiVisibili = [];
     for (const p of spesa.periodi || []) {
-      const quote = (p.quote || []).filter(quotePassanoFiltri);
+      const quote = ordinaQuotePerIdentificativo((p.quote || []).filter(quotePassanoFiltri));
       if (!quote.length) continue;
       periodiVisibili.push({ periodo: p, quote });
     }
@@ -446,6 +477,8 @@ function costruisciSezioneSpesePeriodi(contenitore, dati) {
       table.innerHTML = `
         <thead>
           <tr>
+            <th>ID</th>
+            <th>Sub.</th>
             <th>Proprietà</th>
             <th>Occupante</th>
             <th class="num">%</th>
@@ -461,19 +494,21 @@ function costruisciSezioneSpesePeriodi(contenitore, dati) {
       for (const q of quote) {
         const tr = document.createElement("tr");
         tr.innerHTML = `
-          <td></td><td></td>
+          <td></td><td></td><td></td><td></td>
           <td class="num"></td><td class="num"></td>
           <td class="num"></td><td class="num"></td>
         `;
         const td = tr.children;
-        td[0].textContent = nomeProprieta(q) || "—";
-        td[1].textContent = nomeOccupante(q) || "—";
-        td[2].textContent = formatNum(q.percentuale, 2);
-        td[3].textContent = usaMillesimi
+        td[0].textContent = (q.identificativo || "").trim() || "—";
+        td[1].textContent = (q.subalterno || "").trim() || "—";
+        td[2].textContent = nomeProprieta(q) || "—";
+        td[3].textContent = nomeOccupante(q) || "—";
+        td[4].textContent = formatNum(q.percentuale, 2);
+        td[5].textContent = usaMillesimi
           ? formatNum(q.peso, 2)
           : formatNum(q.peso, 0);
-        td[4].textContent = formatNum(q.baseCalcolo, 2);
-        td[5].textContent = `€ ${formatEuro(q.importo)}`;
+        td[6].textContent = formatNum(q.baseCalcolo, 2);
+        td[7].textContent = `€ ${formatEuro(q.importo)}`;
         sommaQuote += Number(q.importo) || 0;
         tbody.appendChild(tr);
       }

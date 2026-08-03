@@ -481,9 +481,13 @@ fn carica_periodi_archiviati_report(
 #[derive(Debug, Clone, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct RipartizioneQuotaVoce {
+    pub id_riparto: i64,
     pub id_occupante: i64,
+    pub id_unita: i64,
     pub nominativo: String,
     pub proprieta_unita: String,
+    pub identificativo: String,
+    pub subalterno: String,
     pub percentuale: f64,
     pub peso: f64,
     pub base_calcolo: f64,
@@ -753,25 +757,31 @@ fn carica_quote_ripartizione(
 ) -> Result<Vec<RipartizioneQuotaVoce>, String> {
     let mut stmt = conn
         .prepare(
-            "SELECT r.IdOccupante, r.Nominativo, COALESCE(u.Proprieta, ''),
+            "SELECT r.IdRiparto, r.IdOccupante, r.IdUnita, r.Nominativo,
+                    COALESCE(u.Proprieta, ''),
+                    COALESCE(u.Identificativo, ''), COALESCE(u.Subalterno, ''),
                     r.Percentuale, r.Peso, r.BaseCalcolo, r.Importo
              FROM riparto_periodo r
              LEFT JOIN unita u ON u.IdUnita = r.IdUnita
              WHERE r.IdPeriodo = ?1
-             ORDER BY u.Proprieta, r.Nominativo, r.IdRiparto",
+             ORDER BY u.Identificativo, u.Subalterno, u.Proprieta, r.Nominativo, r.IdRiparto",
         )
         .map_err(|e| e.to_string())?;
 
     let rows = stmt
         .query_map(params![id_periodo], |row| {
             Ok(RipartizioneQuotaVoce {
-                id_occupante: row.get(0)?,
-                nominativo: row.get(1)?,
-                proprieta_unita: row.get(2)?,
-                percentuale: row.get(3)?,
-                peso: row.get(4)?,
-                base_calcolo: row.get(5)?,
-                importo: row.get(6)?,
+                id_riparto: row.get(0)?,
+                id_occupante: row.get(1)?,
+                id_unita: row.get(2)?,
+                nominativo: row.get(3)?,
+                proprieta_unita: row.get(4)?,
+                identificativo: row.get(5)?,
+                subalterno: row.get(6)?,
+                percentuale: row.get(7)?,
+                peso: row.get(8)?,
+                base_calcolo: row.get(9)?,
+                importo: row.get(10)?,
             })
         })
         .map_err(|e| e.to_string())?;
@@ -948,6 +958,7 @@ pub struct RiepilogoGestioneVoce {
 pub struct RiepilogoUnitaVoce {
     pub id_unita: i64,
     pub proprieta: String,
+    pub identificativo: String,
     pub totale: f64,
     pub gestioni: Vec<RiepilogoGestioneVoce>,
 }
@@ -974,6 +985,7 @@ fn costruisci_riepilogo_ripartizione(
         .prepare(
             "SELECT r.IdUnita,
                     COALESCE(NULLIF(TRIM(u.Proprieta), ''), '(senza proprietà)'),
+                    COALESCE(u.Identificativo, ''),
                     s.Gestione,
                     SUM(r.Importo)
              FROM riparto_periodo r
@@ -982,8 +994,9 @@ fn costruisci_riepilogo_ripartizione(
              LEFT JOIN unita u ON u.IdUnita = r.IdUnita
              WHERE s.Stato = 'ATTIVA'
                AND p.Archivia = 0
-             GROUP BY r.IdUnita, u.Proprieta, s.Gestione
+             GROUP BY r.IdUnita, u.Proprieta, u.Identificativo, s.Gestione
              ORDER BY
+               u.Identificativo COLLATE NOCASE,
                COALESCE(NULLIF(TRIM(u.Proprieta), ''), '(senza proprietà)') COLLATE NOCASE,
                r.IdUnita,
                CASE WHEN TRIM(s.Gestione) = '' THEN 1 ELSE 0 END,
@@ -997,7 +1010,8 @@ fn costruisci_riepilogo_ripartizione(
                 row.get::<_, i64>(0)?,
                 row.get::<_, String>(1)?,
                 row.get::<_, String>(2)?,
-                row.get::<_, f64>(3)?,
+                row.get::<_, String>(3)?,
+                row.get::<_, f64>(4)?,
             ))
         })
         .map_err(|e| e.to_string())?;
@@ -1006,7 +1020,8 @@ fn costruisci_riepilogo_ripartizione(
     let mut totale_generale = 0.0;
 
     for row in rows {
-        let (id_unita, proprieta, gestione_raw, totale) = row.map_err(|e| e.to_string())?;
+        let (id_unita, proprieta, identificativo, gestione_raw, totale) =
+            row.map_err(|e| e.to_string())?;
         let totale = (totale * 100.0).round() / 100.0;
         totale_generale += totale;
         let gestione = etichetta_gestione(&gestione_raw);
@@ -1022,6 +1037,7 @@ fn costruisci_riepilogo_ripartizione(
         unita.push(RiepilogoUnitaVoce {
             id_unita,
             proprieta,
+            identificativo,
             totale,
             gestioni: vec![RiepilogoGestioneVoce { gestione, totale }],
         });

@@ -11,6 +11,12 @@
   padding: 1.4rem 1rem 1.1rem;
   background: linear-gradient(180deg, #163528 0%, #1f4334 55%, #243b45 100%);
   color: #f3f7f5;
+  /* Resta ferma mentre scorri il contenuto a sinistra */
+  position: sticky;
+  top: 0;
+  align-self: start;
+  height: 100vh;
+  overflow-y: auto;
 }
 
 .sidebar-brand h1 {
@@ -89,6 +95,8 @@
 
   .sidebar {
     min-height: auto;
+    height: auto;
+    position: static;
   }
 
   .sidebar-nav {

@@ -25,8 +25,7 @@
   display: flex;
   flex-wrap: wrap;
   align-items: flex-end;
-  justify-content: space-between;
-  gap: 0.55rem 1rem;
+  gap: 0.45rem 0.65rem;
   flex: 1 1 100%;
   min-width: 0;
 }
@@ -36,6 +35,7 @@
   flex-wrap: wrap;
   align-items: flex-end;
   gap: 0.35rem 0.55rem;
+  flex: 0 0 auto;
 }
 
 .page-ripartizione .rip-head-azioni {
@@ -44,6 +44,7 @@
   align-items: flex-end;
   justify-content: flex-end;
   gap: 0.45rem 0.65rem;
+  flex: 0 0 auto;
   margin-left: auto;
 }
 
@@ -236,27 +237,71 @@
   vertical-align: middle;
 }
 
-.page-ripartizione .filtro-banner {
+.page-ripartizione .filtri-riga {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  justify-content: space-between;
-  gap: 0.4rem 0.75rem;
-  margin-bottom: 0.45rem;
-  padding: 0.35rem 0.55rem;
-  border: 1px solid color-mix(in srgb, var(--accent) 35%, var(--line));
-  border-radius: 8px;
-  background: var(--accent-soft);
-}
-
-.page-ripartizione .filtro-testo {
+  justify-content: center;
+  gap: 0.3rem 0.4rem;
+  flex: 1 1 8rem;
+  min-width: 0;
   margin: 0;
-  font-size: 0.85rem;
+  align-self: center;
 }
 
-.page-ripartizione .btn-filtro-togli {
-  padding: 0.25rem 0.65rem;
+.page-ripartizione .filtro-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  max-width: 100%;
+  padding: 0.12rem 0.2rem 0.12rem 0.4rem;
+  border: 1px solid color-mix(in srgb, var(--accent) 35%, var(--line));
+  border-radius: 999px;
+  background: var(--accent-soft);
+  font-size: 0.72rem;
+  line-height: 1.2;
+}
+
+.page-ripartizione .filtro-chip-lbl {
+  font-size: 0.58rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  color: var(--ink-muted);
+  white-space: nowrap;
+}
+
+.page-ripartizione .filtro-chip strong {
+  font-weight: 700;
+  max-width: 9rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.page-ripartizione .btn-chip-togli {
+  flex: 0 0 auto;
+  width: 1.2rem;
+  height: 1.2rem;
+  padding: 0;
+  border: none;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--ink) 12%, transparent);
+  color: var(--ink);
   font-size: 0.85rem;
+  font-weight: 700;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.page-ripartizione .btn-chip-togli:hover {
+  background: color-mix(in srgb, var(--ink) 22%, transparent);
+}
+
+.page-ripartizione .quote-table .col-id,
+.page-ripartizione .quote-table .col-sub {
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
 }
 
 .page-ripartizione .quote-table .col-proprieta,
@@ -344,7 +389,7 @@
 
   .sidebar,
   .page-ripartizione .rip-head,
-  .page-ripartizione .filtro-banner,
+  .page-ripartizione .filtri-riga,
   .page-ripartizione #rip-corpo,
   .page-ripartizione #rip-vuoto,
   .page-ripartizione #rip-error,
@@ -554,16 +599,41 @@
   }
 }
 
-/* Extra: pagina ripartizione da Archivio Rendiconti */
-.page-archivio-rip .rip-head-titoli {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 0.25rem;
+/* Extra: pagina ripartizione da Archivio Rendiconti — tutto in una riga */
+.page-archivio-rip .rip-head {
+  flex-wrap: nowrap;
+  align-items: center;
+  gap: 0.4rem 0.55rem;
+  margin-bottom: 0.35rem;
 }
 
 .page-archivio-rip .btn-torna-archivio {
+  flex: 0 0 auto;
   padding: 0.22rem 0.55rem;
   font-size: 0.78rem;
-  margin-bottom: 0.1rem;
+  margin: 0;
+}
+
+.page-archivio-rip .rip-archivio-titolo {
+  flex: 0 1 auto;
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: 1.05rem;
+  font-weight: 600;
+  line-height: 1.15;
+  white-space: nowrap;
+  min-width: 0;
+}
+
+.page-archivio-rip .filtri-riga {
+  flex: 1 1 auto;
+  justify-content: flex-start;
+  align-self: center;
+  min-width: 0;
+}
+
+.page-archivio-rip .rip-head-azioni {
+  flex: 0 0 auto;
+  margin-left: 0;
+  align-items: center;
 }

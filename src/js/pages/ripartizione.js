@@ -1,11 +1,19 @@
 import {
+  aggiornaQuotePeriodo,
   reportRipartizioneSpeseConteggiate,
   reportRiepilogoRipartizione,
 } from "../api.js";
+import { chiediConferma } from "../conferma.js";
 
 let root = null;
 /** Ultimi dati caricati dal server (prima dei filtri). */
 let datiCache = null;
+/** Copia di lavoro in modifica multipla (null = sola lettura). */
+let bozzaDati = null;
+/** true = modalità modifica multipla attiva. */
+let modoModificaMultipla = false;
+/** Id periodi spuntati (number). */
+let periodiSelezionati = new Set();
 /** Nome tipologia (gruppoSpesa), oppure null = tutte. */
 let filtroTipologia = null;
 /** Nome proprietà selezionata, oppure null = tutte. */
@@ -75,6 +83,23 @@ function nomeProprieta(q) {
 
 function nomeOccupante(q) {
   return (q.nominativo || "").trim();
+}
+
+/** Ordina le quote per Identificativo (poi Sub, Proprietà, Occupante). */
+function ordinaQuotePerIdentificativo(quote) {
+  return [...quote].sort((a, b) => {
+    const idA = (a.identificativo || "").trim();
+    const idB = (b.identificativo || "").trim();
+    const cmpId = idA.localeCompare(idB, "it", { numeric: true, sensitivity: "base" });
+    if (cmpId !== 0) return cmpId;
+    const subA = (a.subalterno || "").trim();
+    const subB = (b.subalterno || "").trim();
+    const cmpSub = subA.localeCompare(subB, "it", { numeric: true, sensitivity: "base" });
+    if (cmpSub !== 0) return cmpSub;
+    const cmpProp = nomeProprieta(a).localeCompare(nomeProprieta(b), "it");
+    if (cmpProp !== 0) return cmpProp;
+    return nomeOccupante(a).localeCompare(nomeOccupante(b), "it");
+  });
 }
 
 function haFiltroAttivo() {
@@ -164,7 +189,7 @@ function applicaFiltroTipologia(nome) {
   if (filtroTipologia === pulito) return;
   filtroTipologia = pulito;
   aggiornaBannerFiltro();
-  if (datiCache) renderDati(datiCache);
+  if (datiAttivi()) renderDati(datiAttivi());
 }
 
 function applicaFiltroProprieta(nome) {
@@ -173,7 +198,7 @@ function applicaFiltroProprieta(nome) {
   if (filtroProprieta === pulito) return;
   filtroProprieta = pulito;
   aggiornaBannerFiltro();
-  if (datiCache) renderDati(datiCache);
+  if (datiAttivi()) renderDati(datiAttivi());
 }
 
 function applicaFiltroOccupante(nome) {
@@ -182,28 +207,249 @@ function applicaFiltroOccupante(nome) {
   if (filtroOccupante === pulito) return;
   filtroOccupante = pulito;
   aggiornaBannerFiltro();
-  if (datiCache) renderDati(datiCache);
+  if (datiAttivi()) renderDati(datiAttivi());
 }
 
 function togliFiltroTipologia() {
   if (!filtroTipologia) return;
   filtroTipologia = null;
   aggiornaBannerFiltro();
-  if (datiCache) renderDati(datiCache);
+  if (datiAttivi()) renderDati(datiAttivi());
 }
 
 function togliFiltroProprieta() {
   if (!filtroProprieta) return;
   filtroProprieta = null;
   aggiornaBannerFiltro();
-  if (datiCache) renderDati(datiCache);
+  if (datiAttivi()) renderDati(datiAttivi());
 }
 
 function togliFiltroOccupante() {
   if (!filtroOccupante) return;
   filtroOccupante = null;
   aggiornaBannerFiltro();
-  if (datiCache) renderDati(datiCache);
+  if (datiAttivi()) renderDati(datiAttivi());
+}
+
+function datiAttivi() {
+  return modoModificaMultipla && bozzaDati ? bozzaDati : datiCache;
+}
+
+function aggiornaUiModificaMultipla() {
+  const pagina = root?.querySelector(".page-ripartizione") || root;
+  pagina?.classList.toggle("is-multi-edit", modoModificaMultipla);
+  const hint = $("#rip-multi-hint");
+  if (hint) hint.hidden = !modoModificaMultipla;
+  const btnMod = $("#btn-modifica-multipla");
+  const btnSalva = $("#btn-salva-multipla");
+  const btnAnnulla = $("#btn-annulla-multipla");
+  const btnStampa = $("#btn-stampa-rip");
+  if (btnMod) btnMod.hidden = modoModificaMultipla;
+  if (btnSalva) btnSalva.hidden = !modoModificaMultipla;
+  if (btnAnnulla) btnAnnulla.hidden = !modoModificaMultipla;
+  if (btnStampa) btnStampa.hidden = modoModificaMultipla;
+}
+
+function entraModificaMultipla() {
+  if (!datiCache?.spese?.length) {
+    mostraErrore($("#rip-error"), "Non ci sono periodi da modificare.");
+    return;
+  }
+  mostraErrore($("#rip-error"), "");
+  modoModificaMultipla = true;
+  bozzaDati = structuredClone(datiCache);
+  periodiSelezionati = new Set();
+  aggiornaUiModificaMultipla();
+  renderDati(bozzaDati);
+}
+
+function esciModificaMultipla(ricaricaDopo) {
+  modoModificaMultipla = false;
+  bozzaDati = null;
+  periodiSelezionati = new Set();
+  aggiornaUiModificaMultipla();
+  if (ricaricaDopo) {
+    carica();
+  } else if (datiCache) {
+    renderDati(datiCache);
+  }
+}
+
+function trovaPeriodoInDati(dati, idPeriodo) {
+  for (const spesa of dati?.spese || []) {
+    for (const p of spesa.periodi || []) {
+      if (p.idPeriodo === idPeriodo) return { spesa, periodo: p };
+    }
+  }
+  return null;
+}
+
+/** Ricalcola parziali e importi delle quote di un periodo (in memoria). */
+function ricalcolaQuoteInMemoria(quote, importoPeriodo) {
+  for (const q of quote) {
+    const peso = Number(q.peso);
+    const perc = Number(q.percentuale);
+    q.peso = Number.isFinite(peso) && peso >= 0 ? peso : 0;
+    q.percentuale = Number.isFinite(perc) && perc >= 0 ? perc : 0;
+    if (q.percentuale > 100) q.percentuale = 100;
+    q.baseCalcolo = q.percentuale * q.peso;
+  }
+
+  const totale = quote.reduce((s, q) => s + q.baseCalcolo, 0);
+  const importo = Number(importoPeriodo) || 0;
+  if (totale <= 0) {
+    const n = quote.length;
+    const quota = n ? importo / n : 0;
+    quote.forEach((q, i) => {
+      q.importo =
+        i === n - 1
+          ? Math.round((importo - quota * (n - 1)) * 100) / 100
+          : Math.round(quota * 100) / 100;
+    });
+  } else {
+    let somma = 0;
+    quote.forEach((q, i) => {
+      if (i === quote.length - 1) {
+        q.importo = Math.round((importo - somma) * 100) / 100;
+      } else {
+        q.importo = Math.round(((importo * q.baseCalcolo) / totale) * 100) / 100;
+        somma += q.importo;
+      }
+    });
+  }
+}
+
+/**
+ * Applica peso/% a un’unità nei periodi selezionati (+ il periodo sorgente).
+ * Poi aggiorna a schermo senza perdere il focus sull’input.
+ */
+function applicaValoreAiPeriodiSelezionati(idPeriodoSorgente, idUnita, campo, valore) {
+  if (!bozzaDati) return;
+  const ids = new Set(periodiSelezionati);
+  ids.add(idPeriodoSorgente);
+
+  for (const idP of ids) {
+    const found = trovaPeriodoInDati(bozzaDati, idP);
+    if (!found) continue;
+    const { periodo: p } = found;
+    let toccata = false;
+    for (const q of p.quote || []) {
+      if (Number(q.idUnita) !== Number(idUnita)) continue;
+      q[campo] = valore;
+      toccata = true;
+    }
+    if (toccata) {
+      ricalcolaQuoteInMemoria(p.quote, p.importo);
+      p.totaleQuote = (p.quote || []).reduce((s, q) => s + Number(q.importo || 0), 0);
+    }
+  }
+
+  sincronizzaDomDopoEdit(idUnita, campo, valore, idPeriodoSorgente);
+}
+
+function sincronizzaDomDopoEdit(idUnita, campo, valore, idPeriodoFocus) {
+  const idU = String(idUnita);
+  for (const blocco of root.querySelectorAll(".periodo-blocco")) {
+    const idP = Number(blocco.dataset.idPeriodo);
+    if (!periodiSelezionati.has(idP) && idP !== idPeriodoFocus) continue;
+
+    const found = trovaPeriodoInDati(bozzaDati, idP);
+    if (!found) continue;
+    const { periodo: p } = found;
+
+    for (const tr of blocco.querySelectorAll("tbody tr")) {
+      const idURow = Number(tr.dataset.idUnita);
+      const q = (p.quote || []).find((x) => Number(x.idUnita) === idURow);
+      if (!q) continue;
+
+      if (String(idURow) === idU) {
+        const inpPeso = tr.querySelector(".input-peso");
+        const inpPerc = tr.querySelector(".input-perc");
+        if (campo === "peso" && inpPeso && idP !== idPeriodoFocus) {
+          inpPeso.value = String(valore);
+        }
+        if (campo === "percentuale" && inpPerc && idP !== idPeriodoFocus) {
+          inpPerc.value = String(valore);
+        }
+      }
+
+      const cellParz = tr.querySelector(".cell-parziale");
+      const cellImp = tr.querySelector(".cell-importo");
+      if (cellParz) cellParz.textContent = formatNum(q.baseCalcolo, 2);
+      if (cellImp) cellImp.textContent = `€ ${formatEuro(q.importo)}`;
+    }
+
+    const footBox = blocco.querySelector(".tot-euro-box");
+    if (footBox) {
+      const visibili = (p.quote || []).filter(quotePassanoFiltri);
+      const somma = visibili.reduce((s, q) => s + Number(q.importo || 0), 0);
+      footBox.textContent = formatEuro(Math.round(somma * 100) / 100);
+    }
+  }
+}
+
+async function salvaModificaMultipla() {
+  mostraErrore($("#rip-error"), "");
+  if (!bozzaDati) return;
+
+  if (!periodiSelezionati.size) {
+    mostraErrore($("#rip-error"), "Seleziona almeno un periodo da salvare.");
+    return;
+  }
+
+  const n = periodiSelezionati.size;
+  const ok = await chiediConferma(
+    `Salvare le modifiche su ${n} period${n === 1 ? "o" : "i"} selezionat${n === 1 ? "o" : "i"}?`
+  );
+  if (!ok) return;
+
+  const errori = [];
+  let salvati = 0;
+
+  for (const idP of periodiSelezionati) {
+    const found = trovaPeriodoInDati(bozzaDati, idP);
+    if (!found) {
+      errori.push(`Periodo ${idP}: non trovato`);
+      continue;
+    }
+    const { periodo: p } = found;
+    const quote = p.quote || [];
+    if (!quote.length) {
+      errori.push(
+        `${formatDataIt(p.periodoDa)}→${formatDataIt(p.periodoA)}: senza quote`
+      );
+      continue;
+    }
+    try {
+      await aggiornaQuotePeriodo(p.idPeriodo, {
+        quote: quote.map((q) => ({
+          idRiparto: q.idRiparto,
+          percentuale: Number(q.percentuale),
+          peso: Number(q.peso),
+        })),
+        archivia: false,
+        rendicontoDel: "",
+      });
+      salvati += 1;
+    } catch (err) {
+      errori.push(
+        `${formatDataIt(p.periodoDa)}→${formatDataIt(p.periodoA)}: ${String(err)}`
+      );
+    }
+  }
+
+  if (errori.length) {
+    mostraErrore(
+      $("#rip-error"),
+      `Salvati ${salvati}. Errori: ${errori.join("; ")}`
+    );
+  }
+
+  modoModificaMultipla = false;
+  bozzaDati = null;
+  periodiSelezionati = new Set();
+  aggiornaUiModificaMultipla();
+  await carica();
 }
 
 function renderDati(dati) {
@@ -235,7 +481,7 @@ function renderDati(dati) {
 
     const periodiVisibili = [];
     for (const p of spesa.periodi) {
-      const quote = p.quote.filter(quotePassanoFiltri);
+      const quote = ordinaQuotePerIdentificativo(p.quote.filter(quotePassanoFiltri));
       if (!quote.length) continue;
       periodiVisibili.push({ periodo: p, quote });
     }
@@ -285,11 +531,19 @@ function renderDati(dati) {
 
     for (const { periodo: p, quote } of periodiVisibili) {
       const blocco = document.createElement("div");
-      blocco.className = "periodo-blocco";
+      blocco.className =
+        "periodo-blocco" +
+        (modoModificaMultipla && periodiSelezionati.has(p.idPeriodo)
+          ? " is-selezionato"
+          : "");
+      blocco.dataset.idPeriodo = String(p.idPeriodo);
 
       const pHead = document.createElement("div");
       pHead.className = "periodo-head";
       pHead.innerHTML = `
+        <label class="periodo-check" title="Seleziona periodo">
+          <input type="checkbox" class="chk-periodo" />
+        </label>
         <div class="campo"><span class="lbl">Da</span><span class="val" data-k="da"></span></div>
         <div class="campo"><span class="lbl">A</span><span class="val" data-k="a"></span></div>
         <div class="campo"><span class="lbl">Giorni</span><span class="val" data-k="gg"></span></div>
@@ -300,7 +554,23 @@ function renderDati(dati) {
       pHead.querySelector('[data-k="a"]').textContent = formatDataIt(p.periodoA);
       pHead.querySelector('[data-k="gg"]').textContent = String(p.giorni);
       pHead.querySelector('[data-k="imp"]').textContent = formatEuro(p.importo);
+
+      const chk = pHead.querySelector(".chk-periodo");
+      chk.checked = periodiSelezionati.has(p.idPeriodo);
+      chk.addEventListener("change", () => {
+        if (chk.checked) periodiSelezionati.add(p.idPeriodo);
+        else periodiSelezionati.delete(p.idPeriodo);
+        blocco.classList.toggle("is-selezionato", chk.checked);
+      });
+
       pHead.querySelector(".btn-vai-spesa").addEventListener("click", () => {
+        if (modoModificaMultipla) {
+          mostraErrore(
+            $("#rip-error"),
+            "Esci dalla modifica multipla (Annulla o Salva) prima di aprire la spesa."
+          );
+          return;
+        }
         window.apriRipartoSpesa?.(spesa.idSpesa, "ripartizione");
       });
       blocco.appendChild(pHead);
@@ -310,6 +580,8 @@ function renderDati(dati) {
       table.innerHTML = `
         <thead>
           <tr>
+            <th>ID</th>
+            <th>Sub</th>
             <th>Proprietà</th>
             <th>Occupante</th>
             <th class="num">%</th>
@@ -325,34 +597,93 @@ function renderDati(dati) {
       let sommaQuote = 0;
       for (const q of quote) {
         const tr = document.createElement("tr");
+        tr.dataset.idUnita = String(q.idUnita ?? "");
+        tr.dataset.idRiparto = String(q.idRiparto ?? "");
+        tr.dataset.idOccupante = String(q.idOccupante ?? "");
         tr.innerHTML = `
+          <td class="col-id"></td>
+          <td class="col-sub"></td>
           <td class="col-proprieta"></td>
           <td class="col-nome"></td>
-          <td class="num"></td>
-          <td class="num"></td>
-          <td class="num"></td>
-          <td class="num"></td>
-          <td class="num"></td>
+          <td class="num cell-perc"></td>
+          <td class="num cell-parti"></td>
+          <td class="num cell-mill"></td>
+          <td class="num cell-parziale"></td>
+          <td class="num cell-importo"></td>
         `;
         const td = tr.children;
         const prop = nomeProprieta(q) || "—";
         const occ = nomeOccupante(q) || "—";
-        td[0].textContent = prop;
-        td[0].title = "Doppio clic: mostra solo questa proprietà";
-        td[0].addEventListener("dblclick", () => applicaFiltroProprieta(prop));
-        td[1].textContent = occ;
-        td[1].title = "Doppio clic: mostra solo questo occupante";
-        td[1].addEventListener("dblclick", () => applicaFiltroOccupante(occ));
-        td[2].textContent = formatNum(q.percentuale, 2);
-        if (usaMillesimi) {
-          td[3].textContent = "";
-          td[4].textContent = formatNum(q.peso, 2);
-        } else {
-          td[3].textContent = formatNum(q.peso, 0);
+        td[0].textContent = (q.identificativo || "").trim() || "—";
+        td[1].textContent = (q.subalterno || "").trim() || "—";
+        td[2].textContent = prop;
+        td[2].title = "Doppio clic: mostra solo questa proprietà";
+        td[2].addEventListener("dblclick", () => applicaFiltroProprieta(prop));
+        td[3].textContent = occ;
+        td[3].title = "Doppio clic: mostra solo questo occupante";
+        td[3].addEventListener("dblclick", () => applicaFiltroOccupante(occ));
+
+        if (modoModificaMultipla) {
+          const inpPerc = document.createElement("input");
+          inpPerc.type = "number";
+          inpPerc.className = "input-quota input-perc";
+          inpPerc.min = "0";
+          inpPerc.max = "100";
+          inpPerc.step = "any";
+          inpPerc.value = String(q.percentuale);
           td[4].textContent = "";
+          td[4].appendChild(inpPerc);
+
+          const inpPeso = document.createElement("input");
+          inpPeso.type = "number";
+          inpPeso.className = "input-quota input-peso";
+          inpPeso.min = "0";
+          inpPeso.step = "any";
+          inpPeso.value = String(q.peso);
+
+          if (usaMillesimi) {
+            td[5].textContent = "";
+            td[6].textContent = "";
+            td[6].appendChild(inpPeso);
+          } else {
+            td[5].textContent = "";
+            td[5].appendChild(inpPeso);
+            td[6].textContent = "";
+          }
+
+          const onEdit = (campo, el) => {
+            const raw = Number(el.value);
+            const valore =
+              campo === "percentuale"
+                ? Number.isFinite(raw)
+                  ? Math.min(100, Math.max(0, raw))
+                  : 0
+                : Number.isFinite(raw) && raw >= 0
+                  ? raw
+                  : 0;
+            el.value = String(valore);
+            if (!periodiSelezionati.has(p.idPeriodo)) {
+              periodiSelezionati.add(p.idPeriodo);
+              chk.checked = true;
+              blocco.classList.add("is-selezionato");
+            }
+            applicaValoreAiPeriodiSelezionati(p.idPeriodo, q.idUnita, campo, valore);
+          };
+          inpPerc.addEventListener("change", () => onEdit("percentuale", inpPerc));
+          inpPeso.addEventListener("change", () => onEdit("peso", inpPeso));
+        } else {
+          td[4].textContent = formatNum(q.percentuale, 2);
+          if (usaMillesimi) {
+            td[5].textContent = "";
+            td[6].textContent = formatNum(q.peso, 2);
+          } else {
+            td[5].textContent = formatNum(q.peso, 0);
+            td[6].textContent = "";
+          }
         }
-        td[5].textContent = formatNum(q.baseCalcolo, 2);
-        td[6].textContent = `€ ${formatEuro(q.importo)}`;
+
+        td[7].textContent = formatNum(q.baseCalcolo, 2);
+        td[8].textContent = `€ ${formatEuro(q.importo)}`;
         sommaQuote += Number(q.importo) || 0;
         tbody.appendChild(tr);
       }
@@ -410,6 +741,14 @@ function renderDati(dati) {
 }
 
 async function carica() {
+  // Un nuovo caricamento dal server chiude la modifica multipla.
+  if (modoModificaMultipla) {
+    modoModificaMultipla = false;
+    bozzaDati = null;
+    periodiSelezionati = new Set();
+    aggiornaUiModificaMultipla();
+  }
+
   mostraErrore($("#rip-error"), "");
   const da = ($("#rip-da").value || "").trim();
   const a = ($("#rip-a").value || "").trim();
@@ -517,7 +856,7 @@ function costruisciSezioneSpesePeriodi(contenitore, dati) {
     const usaMillesimi = spesa.ripartizione === "Millesimi";
     const periodiVisibili = [];
     for (const p of spesa.periodi || []) {
-      const quote = (p.quote || []).filter(quotePassanoFiltri);
+      const quote = ordinaQuotePerIdentificativo((p.quote || []).filter(quotePassanoFiltri));
       if (!quote.length) continue;
       periodiVisibili.push({ periodo: p, quote });
     }
@@ -555,6 +894,8 @@ function costruisciSezioneSpesePeriodi(contenitore, dati) {
       table.innerHTML = `
         <thead>
           <tr>
+            <th>ID</th>
+            <th>Sub</th>
             <th>Proprietà</th>
             <th>Occupante</th>
             <th class="num">%</th>
@@ -570,19 +911,21 @@ function costruisciSezioneSpesePeriodi(contenitore, dati) {
       for (const q of quote) {
         const tr = document.createElement("tr");
         tr.innerHTML = `
-          <td></td><td></td>
+          <td></td><td></td><td></td><td></td>
           <td class="num"></td><td class="num"></td>
           <td class="num"></td><td class="num"></td>
         `;
         const td = tr.children;
-        td[0].textContent = nomeProprieta(q) || "—";
-        td[1].textContent = nomeOccupante(q) || "—";
-        td[2].textContent = formatNum(q.percentuale, 2);
-        td[3].textContent = usaMillesimi
+        td[0].textContent = (q.identificativo || "").trim() || "—";
+        td[1].textContent = (q.subalterno || "").trim() || "—";
+        td[2].textContent = nomeProprieta(q) || "—";
+        td[3].textContent = nomeOccupante(q) || "—";
+        td[4].textContent = formatNum(q.percentuale, 2);
+        td[5].textContent = usaMillesimi
           ? formatNum(q.peso, 2)
           : formatNum(q.peso, 0);
-        td[4].textContent = formatNum(q.baseCalcolo, 2);
-        td[5].textContent = `€ ${formatEuro(q.importo)}`;
+        td[6].textContent = formatNum(q.baseCalcolo, 2);
+        td[7].textContent = `€ ${formatEuro(q.importo)}`;
         sommaQuote += Number(q.importo) || 0;
         tbody.appendChild(tr);
       }
@@ -762,10 +1105,14 @@ async function stampaRipartizione() {
 export async function onEnter(pageRoot) {
   root = pageRoot;
   datiCache = null;
+  bozzaDati = null;
+  modoModificaMultipla = false;
+  periodiSelezionati = new Set();
   filtroTipologia = null;
   filtroProprieta = null;
   filtroOccupante = null;
   aggiornaBannerFiltro();
+  aggiornaUiModificaMultipla();
 
   const daEl = $("#rip-da");
   const aEl = $("#rip-a");
@@ -784,6 +1131,19 @@ export async function onEnter(pageRoot) {
   $("#btn-togli-filtro-occupante")?.addEventListener("click", () => {
     togliFiltroOccupante();
   });
+  $("#btn-modifica-multipla")?.addEventListener("click", () => {
+    entraModificaMultipla();
+  });
+  $("#btn-salva-multipla")?.addEventListener("click", () => {
+    salvaModificaMultipla();
+  });
+  $("#btn-annulla-multipla")?.addEventListener("click", async () => {
+    const ok = await chiediConferma(
+      "Annullare la modifica multipla? Le modifiche non salvate andranno perse."
+    );
+    if (!ok) return;
+    esciModificaMultipla(false);
+  });
   $("#btn-stampa-rip")?.addEventListener("click", () => {
     stampaRipartizione();
   });
@@ -793,6 +1153,9 @@ export async function onEnter(pageRoot) {
 export function onLeave() {
   root = null;
   datiCache = null;
+  bozzaDati = null;
+  modoModificaMultipla = false;
+  periodiSelezionati = new Set();
   filtroTipologia = null;
   filtroProprieta = null;
   filtroOccupante = null;

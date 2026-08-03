@@ -44,6 +44,15 @@
       </div>
 
       <div class="rip-head-azioni">
+        <button type="button" class="btn btn-secondary btn-rip-date" id="btn-modifica-multipla">
+          Modifica multipla
+        </button>
+        <button type="button" class="btn btn-rip-date" id="btn-salva-multipla" hidden>
+          Salva
+        </button>
+        <button type="button" class="btn btn-ghost btn-rip-date" id="btn-annulla-multipla" hidden>
+          Annulla
+        </button>
         <button type="button" class="btn btn-secondary btn-rip-date" id="btn-stampa-rip">
           Stampa
         </button>
@@ -54,6 +63,11 @@
       </div>
     </div>
   </div>
+
+  <p class="muted rip-multi-hint" id="rip-multi-hint" hidden>
+    Modalità modifica multipla: spunta i periodi, filtra (doppio clic su proprietà/occupante),
+    cambia % o Parti/Millesimi — i periodi selezionati si aggiornano insieme. Poi Salva.
+  </p>
 
   <p class="form-error" id="rip-error" hidden></p>
   <p class="muted" id="rip-vuoto" hidden>
