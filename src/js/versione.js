@@ -15,11 +15,11 @@ export async function getVersioneApp() {
   } catch {
     /* ignora */
   }
-  cacheVersione = "0.1.4";
+  cacheVersione = "0.1.5";
   return cacheVersione;
 }
 
-/** Es. "Gestione Condominio v0.1.4" */
+/** Es. "Gestione Condominio v0.1.5" */
 export async function titoloAppBase() {
   const v = await getVersioneApp();
   return `Gestione Condominio v${v}`;

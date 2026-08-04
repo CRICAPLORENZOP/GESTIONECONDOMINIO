@@ -263,7 +263,19 @@ function apriForm(spesa = null) {
   }
 
   pannello.hidden = false;
-  $("#spesa-da").focus();
+
+  if (spesa) {
+    $("#spesa-da").focus();
+  } else {
+    // Nuova spesa: focus sulla tipologia e apre l’elenco (così non si dimentica).
+    const selTipologia = $("#id-tipologia");
+    selTipologia?.focus();
+    try {
+      selTipologia?.showPicker?.();
+    } catch {
+      // showPicker può fallire in alcuni contesti: resta comunque il focus.
+    }
+  }
 }
 
 function chiudiForm() {

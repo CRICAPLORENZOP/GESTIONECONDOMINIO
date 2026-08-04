@@ -1,4 +1,5 @@
-import { reportRipartizioneArchiviatiPerRendiconto } from "../api.js";
+import { aggiornaQuotePeriodo, reportRipartizioneArchiviatiPerRendiconto } from "../api.js";
+import { chiediConferma } from "../conferma.js";
 
 const STORAGE_RENDICONTO =
   window.STORAGE_ARCHIVIO_RENDICONTO || "gestione.archivioRendicontoDel";
@@ -166,6 +167,38 @@ function togliFiltroOccupante() {
   if (datiCache) renderDati(datiCache);
 }
 
+/** Riporta un periodo da archiviato ad attivo (Archivia = 0). */
+async function ripristinaPeriodo(periodo) {
+  const etichetta = `${formatDataIt(periodo.periodoDa)} → ${formatDataIt(periodo.periodoA)}`;
+  const ok = await chiediConferma(
+    `Ripristinare il periodo ${etichetta}?\n` +
+      `Tornerà tra le spese attive (Ripartizione spese conteggiate) e sparirà da questo rendiconto.`
+  );
+  if (!ok) return;
+
+  mostraErrore($("#rip-error"), "");
+  const quote = periodo.quote || [];
+  if (!quote.length) {
+    mostraErrore($("#rip-error"), `Il periodo ${etichetta} non ha quote da ripristinare.`);
+    return;
+  }
+
+  try {
+    await aggiornaQuotePeriodo(periodo.idPeriodo, {
+      quote: quote.map((q) => ({
+        idRiparto: q.idRiparto,
+        percentuale: Number(q.percentuale),
+        peso: Number(q.peso),
+      })),
+      archivia: false,
+      rendicontoDel: "",
+    });
+    await carica();
+  } catch (err) {
+    mostraErrore($("#rip-error"), String(err));
+  }
+}
+
 function renderDati(dati) {
   const corpo = $("#rip-corpo");
   const vuoto = $("#rip-vuoto");
@@ -242,11 +275,17 @@ function renderDati(dati) {
         <div class="campo"><span class="lbl">A</span><span class="val" data-k="a"></span></div>
         <div class="campo"><span class="lbl">Giorni</span><span class="val" data-k="gg"></span></div>
         <span class="periodo-totale">Totale periodo: € <span data-k="imp"></span></span>
+        <button type="button" class="btn-ripristina-periodo" title="Riporta il periodo tra le spese attive">
+          Ripristina
+        </button>
       `;
       pHead.querySelector('[data-k="da"]').textContent = formatDataIt(p.periodoDa);
       pHead.querySelector('[data-k="a"]').textContent = formatDataIt(p.periodoA);
       pHead.querySelector('[data-k="gg"]').textContent = String(p.giorni);
       pHead.querySelector('[data-k="imp"]').textContent = formatEuro(p.importo);
+      pHead.querySelector(".btn-ripristina-periodo").addEventListener("click", () => {
+        ripristinaPeriodo(p);
+      });
       blocco.appendChild(pHead);
 
       const table = document.createElement("table");

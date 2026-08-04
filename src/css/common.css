@@ -194,6 +194,13 @@ a {
   border-color: var(--accent);
 }
 
+/* Fuoco in tutta l’app: evidenzia caselle di testo e di scelta */
+input:not([type="checkbox"]):not([type="radio"]):not([type="button"]):not([type="submit"]):not([type="reset"]):not([type="hidden"]):not([type="file"]):not([type="range"]):not([type="color"]):focus,
+textarea:focus,
+select:focus {
+  background-color: #ffe566 !important;
+}
+
 .form-actions {
   display: flex;
   flex-wrap: wrap;

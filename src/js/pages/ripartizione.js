@@ -12,6 +12,8 @@ let datiCache = null;
 let bozzaDati = null;
 /** true = modalità modifica multipla attiva. */
 let modoModificaMultipla = false;
+/** true = modalità archivia periodi attiva. */
+let modoArchivia = false;
 /** Id periodi spuntati (number). */
 let periodiSelezionati = new Set();
 /** Nome tipologia (gruppoSpesa), oppure null = tutte. */
@@ -158,9 +160,8 @@ function aggiornaBannerFiltro() {
   }
 
   if (riga) {
-    // La riga resta sempre nello spazio centrale (tra Filtra e Stampa);
-    // si nascondono solo le singole chip.
-    riga.hidden = false;
+    // Visibile solo se c’è almeno una chip attiva, sotto il testo descrittivo.
+    riga.hidden = !(filtroTipologia || filtroProprieta || filtroOccupante);
   }
 }
 
@@ -235,22 +236,48 @@ function datiAttivi() {
   return modoModificaMultipla && bozzaDati ? bozzaDati : datiCache;
 }
 
+function inModoSelezionePeriodi() {
+  return modoModificaMultipla || modoArchivia;
+}
+
 function aggiornaUiModificaMultipla() {
   const pagina = root?.querySelector(".page-ripartizione") || root;
   pagina?.classList.toggle("is-multi-edit", modoModificaMultipla);
-  const hint = $("#rip-multi-hint");
-  if (hint) hint.hidden = !modoModificaMultipla;
+  pagina?.classList.toggle("is-archivia", modoArchivia);
+
+  const hintMulti = $("#rip-multi-hint");
+  if (hintMulti) hintMulti.hidden = !modoModificaMultipla;
+  const hintArch = $("#rip-archivia-hint");
+  if (hintArch) hintArch.hidden = !modoArchivia;
+
   const btnMod = $("#btn-modifica-multipla");
+  const btnArch = $("#btn-archivia");
   const btnSalva = $("#btn-salva-multipla");
+  const btnSalvaArch = $("#btn-salva-archivia");
   const btnAnnulla = $("#btn-annulla-multipla");
+  const btnAnnullaArch = $("#btn-annulla-archivia");
   const btnStampa = $("#btn-stampa-rip");
-  if (btnMod) btnMod.hidden = modoModificaMultipla;
+  const boxRendiconto = $("#rip-rendiconto-archivia");
+
+  const inModo = inModoSelezionePeriodi();
+  if (btnMod) btnMod.hidden = inModo;
+  if (btnArch) btnArch.hidden = inModo;
   if (btnSalva) btnSalva.hidden = !modoModificaMultipla;
+  if (btnSalvaArch) btnSalvaArch.hidden = !modoArchivia;
   if (btnAnnulla) btnAnnulla.hidden = !modoModificaMultipla;
-  if (btnStampa) btnStampa.hidden = modoModificaMultipla;
+  if (btnAnnullaArch) btnAnnullaArch.hidden = !modoArchivia;
+  if (btnStampa) btnStampa.hidden = inModo;
+  if (boxRendiconto) boxRendiconto.hidden = !modoArchivia;
 }
 
 function entraModificaMultipla() {
+  if (modoArchivia) {
+    mostraErrore(
+      $("#rip-error"),
+      "Esci dalla modalità Archivia (Annulla) prima di modificare le quote."
+    );
+    return;
+  }
   if (!datiCache?.spese?.length) {
     mostraErrore($("#rip-error"), "Non ci sono periodi da modificare.");
     return;
@@ -267,6 +294,40 @@ function esciModificaMultipla(ricaricaDopo) {
   modoModificaMultipla = false;
   bozzaDati = null;
   periodiSelezionati = new Set();
+  aggiornaUiModificaMultipla();
+  if (ricaricaDopo) {
+    carica();
+  } else if (datiCache) {
+    renderDati(datiCache);
+  }
+}
+
+function entraArchivia() {
+  if (modoModificaMultipla) {
+    mostraErrore(
+      $("#rip-error"),
+      "Esci dalla modifica multipla (Annulla o Salva) prima di archiviare."
+    );
+    return;
+  }
+  if (!datiCache?.spese?.length) {
+    mostraErrore($("#rip-error"), "Non ci sono periodi da archiviare.");
+    return;
+  }
+  mostraErrore($("#rip-error"), "");
+  modoArchivia = true;
+  periodiSelezionati = new Set();
+  const inp = $("#rip-rendiconto-del");
+  if (inp) inp.value = "";
+  aggiornaUiModificaMultipla();
+  renderDati(datiCache);
+}
+
+function esciArchivia(ricaricaDopo) {
+  modoArchivia = false;
+  periodiSelezionati = new Set();
+  const inp = $("#rip-rendiconto-del");
+  if (inp) inp.value = "";
   aggiornaUiModificaMultipla();
   if (ricaricaDopo) {
     carica();
@@ -388,6 +449,13 @@ function sincronizzaDomDopoEdit(idUnita, campo, valore, idPeriodoFocus) {
   }
 }
 
+function selezionaPeriodoSeServe(idPeriodo, chk, blocco) {
+  if (periodiSelezionati.has(idPeriodo)) return;
+  periodiSelezionati.add(idPeriodo);
+  if (chk) chk.checked = true;
+  if (blocco) blocco.classList.add("is-selezionato");
+}
+
 async function salvaModificaMultipla() {
   mostraErrore($("#rip-error"), "");
   if (!bozzaDati) return;
@@ -448,6 +516,81 @@ async function salvaModificaMultipla() {
   modoModificaMultipla = false;
   bozzaDati = null;
   periodiSelezionati = new Set();
+  aggiornaUiModificaMultipla();
+  await carica();
+}
+
+async function salvaArchivia() {
+  mostraErrore($("#rip-error"), "");
+  if (!datiCache) return;
+
+  if (!periodiSelezionati.size) {
+    mostraErrore($("#rip-error"), "Seleziona almeno un periodo da archiviare.");
+    return;
+  }
+
+  const rendicontoDel = ($("#rip-rendiconto-del")?.value || "").trim();
+  if (!rendicontoDel) {
+    mostraErrore(
+      $("#rip-error"),
+      "Indica «Rendiconto del» (es. 31/12/2025) prima di archiviare."
+    );
+    return;
+  }
+
+  const n = periodiSelezionati.size;
+  const ok = await chiediConferma(
+    `Archiviare ${n} period${n === 1 ? "o" : "i"} nel rendiconto «${rendicontoDel}»? ` +
+      `Sparir${n === 1 ? "à" : "anno"} da questo elenco.`
+  );
+  if (!ok) return;
+
+  const errori = [];
+  let salvati = 0;
+
+  for (const idP of periodiSelezionati) {
+    const found = trovaPeriodoInDati(datiCache, idP);
+    if (!found) {
+      errori.push(`Periodo ${idP}: non trovato`);
+      continue;
+    }
+    const { periodo: p } = found;
+    const quote = p.quote || [];
+    if (!quote.length) {
+      errori.push(
+        `${formatDataIt(p.periodoDa)}→${formatDataIt(p.periodoA)}: senza quote`
+      );
+      continue;
+    }
+    try {
+      await aggiornaQuotePeriodo(p.idPeriodo, {
+        quote: quote.map((q) => ({
+          idRiparto: q.idRiparto,
+          percentuale: Number(q.percentuale),
+          peso: Number(q.peso),
+        })),
+        archivia: true,
+        rendicontoDel,
+      });
+      salvati += 1;
+    } catch (err) {
+      errori.push(
+        `${formatDataIt(p.periodoDa)}→${formatDataIt(p.periodoA)}: ${String(err)}`
+      );
+    }
+  }
+
+  if (errori.length) {
+    mostraErrore(
+      $("#rip-error"),
+      `Archiviati ${salvati}. Errori: ${errori.join("; ")}`
+    );
+  }
+
+  modoArchivia = false;
+  periodiSelezionati = new Set();
+  const inp = $("#rip-rendiconto-del");
+  if (inp) inp.value = "";
   aggiornaUiModificaMultipla();
   await carica();
 }
@@ -533,7 +676,7 @@ function renderDati(dati) {
       const blocco = document.createElement("div");
       blocco.className =
         "periodo-blocco" +
-        (modoModificaMultipla && periodiSelezionati.has(p.idPeriodo)
+        (inModoSelezionePeriodi() && periodiSelezionati.has(p.idPeriodo)
           ? " is-selezionato"
           : "");
       blocco.dataset.idPeriodo = String(p.idPeriodo);
@@ -568,6 +711,13 @@ function renderDati(dati) {
           mostraErrore(
             $("#rip-error"),
             "Esci dalla modifica multipla (Annulla o Salva) prima di aprire la spesa."
+          );
+          return;
+        }
+        if (modoArchivia) {
+          mostraErrore(
+            $("#rip-error"),
+            "Esci dalla modalità Archivia (Annulla) prima di aprire la spesa."
           );
           return;
         }
@@ -662,11 +812,7 @@ function renderDati(dati) {
                   ? raw
                   : 0;
             el.value = String(valore);
-            if (!periodiSelezionati.has(p.idPeriodo)) {
-              periodiSelezionati.add(p.idPeriodo);
-              chk.checked = true;
-              blocco.classList.add("is-selezionato");
-            }
+            selezionaPeriodoSeServe(p.idPeriodo, chk, blocco);
             applicaValoreAiPeriodiSelezionati(p.idPeriodo, q.idUnita, campo, valore);
           };
           inpPerc.addEventListener("change", () => onEdit("percentuale", inpPerc));
@@ -741,11 +887,14 @@ function renderDati(dati) {
 }
 
 async function carica() {
-  // Un nuovo caricamento dal server chiude la modifica multipla.
-  if (modoModificaMultipla) {
+  // Un nuovo caricamento dal server chiude le modalità speciali.
+  if (modoModificaMultipla || modoArchivia) {
     modoModificaMultipla = false;
+    modoArchivia = false;
     bozzaDati = null;
     periodiSelezionati = new Set();
+    const inp = $("#rip-rendiconto-del");
+    if (inp) inp.value = "";
     aggiornaUiModificaMultipla();
   }
 
@@ -1107,6 +1256,7 @@ export async function onEnter(pageRoot) {
   datiCache = null;
   bozzaDati = null;
   modoModificaMultipla = false;
+  modoArchivia = false;
   periodiSelezionati = new Set();
   filtroTipologia = null;
   filtroProprieta = null;
@@ -1144,6 +1294,17 @@ export async function onEnter(pageRoot) {
     if (!ok) return;
     esciModificaMultipla(false);
   });
+  $("#btn-archivia")?.addEventListener("click", () => {
+    entraArchivia();
+  });
+  $("#btn-salva-archivia")?.addEventListener("click", () => {
+    salvaArchivia();
+  });
+  $("#btn-annulla-archivia")?.addEventListener("click", async () => {
+    const ok = await chiediConferma("Annullare l’archiviazione?");
+    if (!ok) return;
+    esciArchivia(false);
+  });
   $("#btn-stampa-rip")?.addEventListener("click", () => {
     stampaRipartizione();
   });
@@ -1155,6 +1316,7 @@ export function onLeave() {
   datiCache = null;
   bozzaDati = null;
   modoModificaMultipla = false;
+  modoArchivia = false;
   periodiSelezionati = new Set();
   filtroTipologia = null;
   filtroProprieta = null;

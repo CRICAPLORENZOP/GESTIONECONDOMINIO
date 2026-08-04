@@ -208,6 +208,23 @@
   background: #b7dcf0;
 }
 
+.page-ripartizione .btn-ripristina-periodo {
+  border: 1px solid #9fcbb5;
+  border-radius: 5px;
+  padding: 0.15rem 0.45rem;
+  background: #d4ebe0;
+  color: #1a4a36;
+  font-size: 0.68rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  cursor: pointer;
+}
+
+.page-ripartizione .btn-ripristina-periodo:hover {
+  background: #c0dfd0;
+}
+
 .page-ripartizione .quote-table {
   width: 100%;
   border-collapse: collapse;
@@ -393,7 +410,8 @@
   .page-ripartizione #rip-corpo,
   .page-ripartizione #rip-vuoto,
   .page-ripartizione #rip-error,
-  .page-ripartizione .btn-vai-spesa {
+  .page-ripartizione .btn-vai-spesa,
+  .page-ripartizione .btn-ripristina-periodo {
     display: none !important;
   }
 
