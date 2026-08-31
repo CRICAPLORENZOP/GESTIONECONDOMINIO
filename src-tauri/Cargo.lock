@@ -1268,7 +1268,7 @@ dependencies = [
 
 [[package]]
 name = "gestione-condominio"
-version = "0.1.5"
+version = "0.1.6"
 dependencies = [
  "chrono",
  "rusqlite",

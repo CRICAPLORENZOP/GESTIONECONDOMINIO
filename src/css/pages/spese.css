@@ -248,6 +248,15 @@
   color: var(--accent);
 }
 
+.page-spese .btn-icon.btn-duplica {
+  color: #1a4a66;
+}
+
+.page-spese .btn-icon.btn-duplica:hover {
+  background: #e8f4fc;
+  border-color: #7eb6d9;
+}
+
 .page-spese .badge-stato {
   display: inline-block;
   padding: 0.08rem 0.4rem;

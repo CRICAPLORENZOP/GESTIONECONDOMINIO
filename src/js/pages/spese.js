@@ -218,7 +218,7 @@ function aggiornaUiAllegato(spesa) {
   }
 }
 
-function apriForm(spesa = null) {
+function apriForm(spesa = null, opzioni = {}) {
   if (!tipologieCache.length) {
     mostraErrore(
       $("#lista-error"),
@@ -227,11 +227,13 @@ function apriForm(spesa = null) {
     return;
   }
 
+  const duplica = Boolean(opzioni.duplica);
+
   mostraErrore($("#form-error"), "");
   const pannello = $("#pannello-form");
   const titolo = $("#titolo-form");
 
-  if (spesa) {
+  if (spesa && !duplica) {
     inModificaId = spesa.idSpesa;
     titolo.textContent = `Modifica spesa #${spesa.idSpesa}`;
     $("#id-spesa").value = String(spesa.idSpesa);
@@ -248,6 +250,24 @@ function apriForm(spesa = null) {
     $("#gestione").value = spesa.gestione || "";
     aggiornaCampoTotale();
     aggiornaUiAllegato(spesa);
+  } else if (spesa && duplica) {
+    inModificaId = null;
+    titolo.textContent = `Nuova spesa (copia da #${spesa.idSpesa})`;
+    $("#form-spesa").reset();
+    $("#id-spesa").value = "";
+    popolaTipologie(spesa.idTipologia);
+    $("#spesa-da").value = spesa.spesaDa;
+    $("#spesa-a").value = spesa.spesaA;
+    $("#cifra").value = String(spesa.cifra);
+    $("#spese-pagamento").value = String(spesa.spesePagamento);
+    $("#descrizione").value = spesa.descrizione || "";
+    $("#stato").value = STATO_DEFAULT;
+    $("#data-emissione").value = "";
+    $("#num-fattura").value = "";
+    $("#note-spesa").value = spesa.noteSpesa || "";
+    $("#gestione").value = spesa.gestione || "";
+    aggiornaCampoTotale();
+    aggiornaUiAllegato(null);
   } else {
     inModificaId = null;
     titolo.textContent = "Nuova spesa";
@@ -264,7 +284,9 @@ function apriForm(spesa = null) {
 
   pannello.hidden = false;
 
-  if (spesa) {
+  if (spesa && !duplica) {
+    $("#spesa-da").focus();
+  } else if (spesa && duplica) {
     $("#spesa-da").focus();
   } else {
     // Nuova spesa: focus sulla tipologia e apre l’elenco (così non si dimentica).
@@ -382,19 +404,24 @@ async function ricaricaLista() {
         <td></td>
         <td></td>
         <td class="azioni">
-          <button type="button" class="btn-icon btn-riparto" title="Ripartisci periodi" aria-label="Ripartisci periodi">
-            <svg viewBox="0 0 24 24" aria-hidden="true">
-              <path d="M4 4h7v7H4V4Zm9 0h7v7h-7V4ZM4 13h7v7H4v-7Zm9 0h7v7h-7v-7Z"/>
-            </svg>
-          </button>
           <button type="button" class="btn-icon btn-modifica" title="Modifica" aria-label="Modifica">
             <svg viewBox="0 0 24 24" aria-hidden="true">
               <path d="M4 17.5V20h2.5L18.1 8.4l-2.5-2.5L4 17.5Zm14.7-10.2c.4-.4.4-1 0-1.4l-1.6-1.6a1 1 0 0 0-1.4 0l-1.3 1.3 2.5 2.5 1.8-1.8Z"/>
             </svg>
           </button>
+          <button type="button" class="btn-icon btn-duplica" title="Duplica spesa" aria-label="Duplica spesa">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M16 1H4a2 2 0 0 0-2 2v14h2V3h12V1Zm3 4H8a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h11a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2Zm0 16H8V7h11v14Z"/>
+            </svg>
+          </button>
           <button type="button" class="btn-icon btn-bolletta ${haBolletta(s) ? "has-allegato" : ""}" title="${haBolletta(s) ? "Apri bolletta PDF" : "Allega bolletta PDF"}" aria-label="Bolletta">
             <svg viewBox="0 0 24 24" aria-hidden="true">
               <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-6-6Zm0 2.5L17.5 8H14V4.5ZM8 12h8v1.5H8V12Zm0 3.5h8V17H8v-1.5Zm0-7h5V10H8V8.5Z"/>
+            </svg>
+          </button>
+          <button type="button" class="btn-icon btn-riparto" title="Ripartisci periodi" aria-label="Ripartisci periodi">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M4 4h7v7H4V4Zm9 0h7v7h-7V4ZM4 13h7v7H4v-7Zm9 0h7v7h-7v-7Z"/>
             </svg>
           </button>
           <button type="button" class="btn-icon btn-elimina" title="Elimina" aria-label="Elimina">
@@ -457,6 +484,9 @@ async function ricaricaLista() {
         window.apriRipartoSpesa?.(s.idSpesa);
       });
       tr.querySelector(".btn-modifica").addEventListener("click", () => apriForm(s));
+      tr.querySelector(".btn-duplica").addEventListener("click", () => {
+        apriForm(s, { duplica: true });
+      });
       tr.querySelector(".btn-elimina").addEventListener("click", async () => {
         const ok = await chiediConferma(`Eliminare la spesa #${s.idSpesa}?`);
         if (!ok) return;
@@ -518,7 +548,7 @@ export async function onEnter(pageRoot) {
           okMsg.hidden = false;
           okMsg.style.color = "var(--accent)";
           okMsg.textContent =
-            "Spesa salvata. Ora puoi allegare la bolletta PDF qui sotto.";
+            "Spesa salvata. Ora puoi allegare la bolletta PDF e aprire Riparto per i periodi.";
         }
         await ricaricaLista();
       } else {
