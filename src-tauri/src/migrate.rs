@@ -11,7 +11,7 @@
 use rusqlite::{Connection, OptionalExtension, params};
 
 /// Versione attuale dello schema. Aumentala quando cambi le tabelle.
-pub const SCHEMA_VERSION: i32 = 15;
+pub const SCHEMA_VERSION: i32 = 16;
 
 pub fn leggi_versione(conn: &Connection) -> Result<i32, String> {
     let valore: Option<String> = conn
@@ -105,6 +105,8 @@ pub fn crea_schema_attuale(conn: &Connection) -> Result<(), String> {
             NoteSpesa TEXT NOT NULL DEFAULT '',
             Gestione TEXT NOT NULL DEFAULT '',
             PercorsoAllegato TEXT NOT NULL DEFAULT '',
+            Competenza TEXT NOT NULL DEFAULT 'INQUILINO',
+            QuotaInquilino REAL NOT NULL DEFAULT 100,
             FOREIGN KEY (IdTipologia) REFERENCES tipologia_spesa(IdTipologiaSpesa)
         );
 
@@ -203,6 +205,7 @@ fn applica_migrazione(conn: &Connection, verso: i32) -> Result<(), String> {
         13 => migrate_to_13(conn),
         14 => migrate_to_14(conn),
         15 => migrate_to_15(conn),
+        16 => migrate_to_16(conn),
         altra => Err(format!("Migrazione verso la versione {altra} non definita.")),
     }
 }
@@ -465,6 +468,23 @@ fn migrate_to_15(conn: &Connection) -> Result<(), String> {
         ",
     )
     .map_err(|e| format!("Creazione tabella rate_condominiali fallita: {e}"))?;
+    Ok(())
+}
+
+/// Versione 16: chi paga la spesa (inquilino, proprietà, oppure entrambi in quota).
+fn migrate_to_16(conn: &Connection) -> Result<(), String> {
+    aggiungi_colonna_se_manca(
+        conn,
+        "spesa",
+        "Competenza",
+        "TEXT NOT NULL DEFAULT 'INQUILINO'",
+    )?;
+    aggiungi_colonna_se_manca(
+        conn,
+        "spesa",
+        "QuotaInquilino",
+        "REAL NOT NULL DEFAULT 100",
+    )?;
     Ok(())
 }
 

@@ -184,6 +184,18 @@ function quotePassanoFiltri(q) {
   return true;
 }
 
+/** Tutta a carico della proprietà: l'inquilino non paga nulla. */
+function spesaSoloProprieta(spesa) {
+  if ((spesa?.competenza || "") === "PROPRIETARIO") return true;
+  const quota = Number(spesa?.quotaInquilino);
+  return Number.isFinite(quota) && quota <= 0;
+}
+
+/** Con il filtro occupante, le spese solo proprietà restano nascoste. */
+function nascondiSpesaPerOccupante(spesa) {
+  return filtroOccupante != null && spesaSoloProprieta(spesa);
+}
+
 function applicaFiltroTipologia(nome) {
   const pulito = (nome || "").trim();
   if (!pulito || pulito === "—") return;
@@ -619,6 +631,7 @@ function renderDati(dati) {
     ) {
       continue;
     }
+    if (nascondiSpesaPerOccupante(spesa)) continue;
 
     const usaMillesimi = spesa.ripartizione === "Millesimi";
 
@@ -1001,6 +1014,7 @@ function costruisciSezioneSpesePeriodi(contenitore, dati) {
     ) {
       continue;
     }
+    if (nascondiSpesaPerOccupante(spesa)) continue;
 
     const usaMillesimi = spesa.ripartizione === "Millesimi";
     const periodiVisibili = [];

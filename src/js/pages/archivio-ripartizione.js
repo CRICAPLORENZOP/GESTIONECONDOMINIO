@@ -135,6 +135,18 @@ function quotePassanoFiltri(q) {
   return true;
 }
 
+/** Tutta a carico della proprietà: l'inquilino non paga nulla. */
+function spesaSoloProprieta(spesa) {
+  if ((spesa?.competenza || "") === "PROPRIETARIO") return true;
+  const quota = Number(spesa?.quotaInquilino);
+  return Number.isFinite(quota) && quota <= 0;
+}
+
+/** Con il filtro occupante, le spese solo proprietà restano nascoste. */
+function nascondiSpesaPerOccupante(spesa) {
+  return filtroOccupante != null && spesaSoloProprieta(spesa);
+}
+
 function applicaFiltroProprieta(nome) {
   const pulito = (nome || "").trim();
   if (!pulito || pulito === "—") return;
@@ -217,6 +229,7 @@ function renderDati(dati) {
   let totaleVisualizzato = 0;
 
   for (const spesa of dati.spese) {
+    if (nascondiSpesaPerOccupante(spesa)) continue;
     const usaMillesimi = spesa.ripartizione === "Millesimi";
 
     const periodiVisibili = [];
@@ -430,6 +443,7 @@ function el(tag, className, text) {
 function aggregaProprietaDaDati(dati) {
   const map = new Map();
   for (const spesa of dati?.spese || []) {
+    if (nascondiSpesaPerOccupante(spesa)) continue;
     for (const p of spesa.periodi || []) {
       for (const q of p.quote || []) {
         if (!quotePassanoFiltri(q)) continue;
@@ -475,6 +489,7 @@ function costruisciSezioneSpesePeriodi(contenitore, dati) {
   let mostrate = 0;
 
   for (const spesa of spese) {
+    if (nascondiSpesaPerOccupante(spesa)) continue;
     const usaMillesimi = spesa.ripartizione === "Millesimi";
     const periodiVisibili = [];
     for (const p of spesa.periodi || []) {

@@ -81,6 +81,28 @@
           </select>
         </label>
         <label class="field">
+          <span>Chi paga *</span>
+          <select id="competenza" name="competenza" required>
+            <option value="INQUILINO" selected>Tutta all'inquilino</option>
+            <option value="PROPRIETARIO">Solo proprietà</option>
+            <option value="ENTRAMBI">Entrambi, in quota</option>
+          </select>
+        </label>
+        <label class="field" id="campo-quota-inquilino">
+          <span>Quota inquilino (%)</span>
+          <input
+            type="number"
+            id="quota-inquilino"
+            name="quotaInquilino"
+            min="0"
+            max="100"
+            step="0.01"
+            value="100"
+            readonly
+          />
+        </label>
+        <p class="muted field-full quota-hint" id="quota-hint"></p>
+        <label class="field">
           <span>Data emissione</span>
           <input type="date" id="data-emissione" name="dataEmissione" />
         </label>
@@ -181,6 +203,7 @@
             <th class="num">Sp. pag.</th>
             <th class="num">Totale</th>
             <th>Stato</th>
+            <th>Chi paga</th>
             <th>Gestione</th>
             <th>Descrizione</th>
             <th class="azioni">Azioni</th>
@@ -191,7 +214,7 @@
           <tr>
             <td colspan="7" class="piede-etichetta">Totale complessivo</td>
             <td class="num piede-totale" id="totale-complessivo">0,00</td>
-            <td colspan="4"></td>
+            <td colspan="5"></td>
           </tr>
         </tfoot>
       </table>

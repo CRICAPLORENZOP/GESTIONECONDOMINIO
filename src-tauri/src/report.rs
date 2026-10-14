@@ -519,6 +519,10 @@ pub struct RipartizioneSpesaVoce {
     pub cifra: f64,
     pub spese_pagamento: f64,
     pub totale: f64,
+    /// INQUILINO, PROPRIETARIO oppure ENTRAMBI.
+    pub competenza: String,
+    /// Percentuale a carico dell'inquilino. 0 = tutta la proprietà.
+    pub quota_inquilino: f64,
     pub periodi: Vec<RipartizionePeriodoVoce>,
 }
 
@@ -580,7 +584,8 @@ fn costruisci_ripartizione(
 ) -> Result<ReportRipartizioneConteggiate, String> {
     let sql = if da.is_some() {
         "SELECT s.IdSpesa, t.GruppoSpesa, t.Ripartizione, s.Gestione,
-                s.SpesaDa, s.SpesaA, s.Cifra, s.SpesePagamento
+                s.SpesaDa, s.SpesaA, s.Cifra, s.SpesePagamento,
+                s.Competenza, s.QuotaInquilino
          FROM spesa s
          INNER JOIN tipologia_spesa t ON t.IdTipologiaSpesa = s.IdTipologia
          WHERE s.Stato = 'ATTIVA'
@@ -599,7 +604,8 @@ fn costruisci_ripartizione(
            s.IdSpesa"
     } else {
         "SELECT s.IdSpesa, t.GruppoSpesa, t.Ripartizione, s.Gestione,
-                s.SpesaDa, s.SpesaA, s.Cifra, s.SpesePagamento
+                s.SpesaDa, s.SpesaA, s.Cifra, s.SpesePagamento,
+                s.Competenza, s.QuotaInquilino
          FROM spesa s
          INNER JOIN tipologia_spesa t ON t.IdTipologiaSpesa = s.IdTipologia
          WHERE s.Stato = 'ATTIVA'
@@ -628,6 +634,8 @@ fn costruisci_ripartizione(
             row.get::<_, String>(5)?,
             row.get::<_, f64>(6)?,
             row.get::<_, f64>(7)?,
+            row.get::<_, String>(8)?,
+            row.get::<_, f64>(9)?,
         ))
     };
 
@@ -655,6 +663,8 @@ fn costruisci_ripartizione(
             spesa_a,
             cifra,
             spese_pagamento,
+            competenza,
+            quota_inquilino,
         ) = row.map_err(|e| e.to_string())?;
 
         let periodi = carica_periodi_ripartizione_intervallo(conn, id_spesa, da, a)?;
@@ -675,6 +685,8 @@ fn costruisci_ripartizione(
             cifra,
             spese_pagamento,
             totale: cifra + spese_pagamento,
+            competenza,
+            quota_inquilino,
             periodi,
         });
     }
@@ -819,7 +831,8 @@ fn costruisci_ripartizione_archiviata(
     let mut stmt = conn
         .prepare(
             "SELECT s.IdSpesa, t.GruppoSpesa, t.Ripartizione, s.Gestione,
-                    s.SpesaDa, s.SpesaA, s.Cifra, s.SpesePagamento
+                    s.SpesaDa, s.SpesaA, s.Cifra, s.SpesePagamento,
+                    s.Competenza, s.QuotaInquilino
              FROM spesa s
              INNER JOIN tipologia_spesa t ON t.IdTipologiaSpesa = s.IdTipologia
              WHERE EXISTS (
@@ -848,6 +861,8 @@ fn costruisci_ripartizione_archiviata(
                 row.get::<_, String>(5)?,
                 row.get::<_, f64>(6)?,
                 row.get::<_, f64>(7)?,
+                row.get::<_, String>(8)?,
+                row.get::<_, f64>(9)?,
             ))
         })
         .map_err(|e| e.to_string())?;
@@ -864,6 +879,8 @@ fn costruisci_ripartizione_archiviata(
             spesa_a,
             cifra,
             spese_pagamento,
+            competenza,
+            quota_inquilino,
         ) = row.map_err(|e| e.to_string())?;
 
         let periodi = carica_periodi_ripartizione_archiviati(conn, id_spesa, rendiconto)?;
@@ -886,6 +903,8 @@ fn costruisci_ripartizione_archiviata(
             spese_pagamento,
             // Totale del rendiconto = somma periodi archiviati (non tutta la spesa)
             totale: totale_periodi,
+            competenza,
+            quota_inquilino,
             periodi,
         });
     }

@@ -12,12 +12,15 @@ import { chiediConferma } from "../conferma.js";
 
 const STATO_DEFAULT = "ATTIVA";
 const FILTRO_STATO_DEFAULT = "ATTIVA";
+const COMPETENZA_DEFAULT = "INQUILINO";
 
 let root = null;
 let inModificaId = null;
 let tipologieCache = [];
 let filtroTipologiaId = null;
 let filtroStato = FILTRO_STATO_DEFAULT;
+/** Quota ricordata quando si sceglie «Entrambi», così non si perde cambiando voce. */
+let quotaEntrambiMemorizzata = 50;
 
 function chiaveFiltroTipologia() {
   return window.STORAGE_SPESE_FILTRO_TIPLOGIA || "gestione.speseFiltroTipologiaId";
@@ -130,6 +133,92 @@ function formatEuro(valore) {
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,
   });
+}
+
+function formatQuota(valore) {
+  const n = Number(valore);
+  if (!Number.isFinite(n)) return "0";
+  return n.toLocaleString("it-IT", { maximumFractionDigits: 2 });
+}
+
+function competenzaValida(valore) {
+  if (valore === "PROPRIETARIO" || valore === "ENTRAMBI" || valore === "INQUILINO") {
+    return valore;
+  }
+  return COMPETENZA_DEFAULT;
+}
+
+/** Testo breve per la tabella, più una frase per il tooltip. */
+function etichettaCompetenza(spesa) {
+  const competenza = competenzaValida(spesa?.competenza);
+  const quota = Number(spesa?.quotaInquilino);
+  const inq = Number.isFinite(quota) ? quota : 100;
+  const prop = Math.round((100 - inq) * 100) / 100;
+
+  if (competenza === "PROPRIETARIO") {
+    return {
+      testo: "Proprietà",
+      titolo: "Tutta la spesa è a carico della proprietà.",
+    };
+  }
+  if (competenza === "ENTRAMBI") {
+    return {
+      testo: `${formatQuota(inq)}% / ${formatQuota(prop)}%`,
+      titolo: `Inquilino ${formatQuota(inq)}% · Proprietà ${formatQuota(prop)}%`,
+    };
+  }
+  return {
+    testo: "Inquilino",
+    titolo: "Tutta la spesa è a carico dell'inquilino.",
+  };
+}
+
+function aggiornaCampoCompetenza({ scriviQuota = false } = {}) {
+  const competenza = competenzaValida($("#competenza")?.value);
+  const box = $("#campo-quota-inquilino");
+  const input = $("#quota-inquilino");
+  const hint = $("#quota-hint");
+
+  if (box) box.hidden = false;
+  if (input) {
+    const soloLettura = competenza !== "ENTRAMBI";
+    input.readOnly = soloLettura;
+    input.required = !soloLettura;
+    if (competenza === "PROPRIETARIO") {
+      input.value = "0";
+    } else if (competenza === "INQUILINO") {
+      input.value = "100";
+    } else if (scriviQuota) {
+      input.value = String(quotaEntrambiMemorizzata);
+    }
+  }
+  if (!hint) return;
+
+  hint.hidden = false;
+  if (competenza === "PROPRIETARIO") {
+    hint.textContent =
+      "Tutta la spesa è a carico della proprietà. L'inquilino non paga questa spesa.";
+  } else if (competenza === "ENTRAMBI") {
+    const inq = Number(quotaEntrambiMemorizzata);
+    const quotaInq = Number.isFinite(inq) ? inq : 0;
+    const prop = Math.round((100 - quotaInq) * 100) / 100;
+    hint.textContent = `L'inquilino paga il ${formatQuota(quotaInq)}%. La proprietà paga il resto: ${formatQuota(prop)}%.`;
+  } else {
+    hint.textContent = "Tutta la spesa è a carico dell'inquilino (chi occupa l'unità).";
+  }
+}
+
+function impostaCompetenza(competenza, quotaInquilino) {
+  const scelta = competenzaValida(competenza);
+  const select = $("#competenza");
+  if (select) select.value = scelta;
+  if (scelta === "ENTRAMBI") {
+    const q = Number(quotaInquilino);
+    quotaEntrambiMemorizzata = Number.isFinite(q) ? q : 50;
+  } else {
+    quotaEntrambiMemorizzata = 50;
+  }
+  aggiornaCampoCompetenza({ scriviQuota: true });
 }
 
 function totaleSpesa(cifra, spesePagamento) {
@@ -248,6 +337,7 @@ function apriForm(spesa = null, opzioni = {}) {
     $("#num-fattura").value = spesa.numFattura || "";
     $("#note-spesa").value = spesa.noteSpesa || "";
     $("#gestione").value = spesa.gestione || "";
+    impostaCompetenza(spesa.competenza, spesa.quotaInquilino);
     aggiornaCampoTotale();
     aggiornaUiAllegato(spesa);
   } else if (spesa && duplica) {
@@ -266,6 +356,7 @@ function apriForm(spesa = null, opzioni = {}) {
     $("#num-fattura").value = "";
     $("#note-spesa").value = spesa.noteSpesa || "";
     $("#gestione").value = spesa.gestione || "";
+    impostaCompetenza(spesa.competenza, spesa.quotaInquilino);
     aggiornaCampoTotale();
     aggiornaUiAllegato(null);
   } else {
@@ -277,7 +368,9 @@ function apriForm(spesa = null, opzioni = {}) {
     $("#spese-pagamento").value = "0";
     $("#stato").value = STATO_DEFAULT;
     $("#gestione").value = "";
+    quotaEntrambiMemorizzata = 50;
     popolaTipologie(filtroTipologiaId);
+    impostaCompetenza(COMPETENZA_DEFAULT, 100);
     aggiornaCampoTotale();
     aggiornaUiAllegato(null);
   }
@@ -322,6 +415,13 @@ function leggiForm() {
     numFattura: $("#num-fattura").value,
     noteSpesa: $("#note-spesa").value,
     gestione: $("#gestione").value,
+    competenza: competenzaValida($("#competenza").value),
+    quotaInquilino:
+      $("#competenza").value === "ENTRAMBI"
+        ? Number($("#quota-inquilino").value || 0)
+        : $("#competenza").value === "PROPRIETARIO"
+          ? 0
+          : 100,
   };
 }
 
@@ -401,6 +501,7 @@ async function ricaricaLista() {
         <td class="num"></td>
         <td class="num"></td>
         <td><span class="badge-stato"></span></td>
+        <td class="col-competenza"></td>
         <td></td>
         <td></td>
         <td class="azioni">
@@ -458,8 +559,11 @@ async function ricaricaLista() {
         badge.title = "Alcuni periodi sono archiviati, altri no";
       }
 
-      celle[9].textContent = s.gestione || "—";
-      celle[10].textContent = s.descrizione || "—";
+      const competenza = etichettaCompetenza(s);
+      celle[9].textContent = competenza.testo;
+      celle[9].title = competenza.titolo;
+      celle[10].textContent = s.gestione || "—";
+      celle[11].textContent = s.descrizione || "—";
 
       tr.querySelector(".btn-bolletta").addEventListener("click", async () => {
         mostraErrore($("#lista-error"), "");
@@ -518,6 +622,14 @@ export async function onEnter(pageRoot) {
   $("#btn-annulla").addEventListener("click", () => chiudiForm());
   $("#cifra").addEventListener("input", aggiornaCampoTotale);
   $("#spese-pagamento").addEventListener("input", aggiornaCampoTotale);
+  $("#competenza")?.addEventListener("change", () => {
+    aggiornaCampoCompetenza({ scriviQuota: true });
+  });
+  $("#quota-inquilino")?.addEventListener("input", () => {
+    const q = Number($("#quota-inquilino").value);
+    if (Number.isFinite(q)) quotaEntrambiMemorizzata = q;
+    aggiornaCampoCompetenza();
+  });
   $("#btn-togli-filtro")?.addEventListener("click", async () => {
     togliFiltroTipologia();
     await ricaricaLista();

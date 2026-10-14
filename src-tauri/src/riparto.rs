@@ -362,7 +362,7 @@ fn carica_spesa_base(
     conn.query_row(
         "SELECT s.IdSpesa, s.IdTipologia, s.SpesaDa, s.SpesaA, s.Cifra, s.SpesePagamento,
                 s.Descrizione, s.Stato, s.DataEmissione, s.NumFattura, s.NoteSpesa, s.Gestione,
-                t.GruppoSpesa, t.Ripartizione
+                s.Competenza, s.QuotaInquilino, t.GruppoSpesa, t.Ripartizione
          FROM spesa s
          INNER JOIN tipologia_spesa t ON t.IdTipologiaSpesa = s.IdTipologia
          WHERE s.IdSpesa = ?1",
@@ -382,12 +382,14 @@ fn carica_spesa_base(
                 note_spesa: row.get(10)?,
                 gestione: row.get(11)?,
                 percorso_allegato: String::new(),
-                gruppo_spesa: row.get(12)?,
+                competenza: row.get(12)?,
+                quota_inquilino: row.get(13)?,
+                gruppo_spesa: row.get(14)?,
                 giorni: 0,
                 ha_periodi: false,
                 archivia_parziale: false,
             };
-            let ripartizione: String = row.get(13)?;
+            let ripartizione: String = row.get(15)?;
             Ok((spesa, ripartizione, 0.0))
         },
     )

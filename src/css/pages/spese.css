@@ -163,6 +163,20 @@
   padding: 0.4rem 0.55rem;
 }
 
+.page-spese .quota-hint {
+  margin: 0;
+  font-size: 0.85rem;
+}
+
+.page-spese .col-competenza {
+  white-space: nowrap;
+}
+
+.page-spese #quota-inquilino[readonly] {
+  background: #f4f6f8;
+  color: var(--ink);
+}
+
 .page-spese #totale-spesa {
   background: var(--accent-soft);
   font-weight: 700;

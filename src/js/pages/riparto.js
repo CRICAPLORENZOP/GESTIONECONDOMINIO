@@ -43,6 +43,30 @@ function formatEuro(valore) {
   });
 }
 
+/** Divide l'importo dell'unità tra inquilino e proprietà, in base alla spesa. */
+function splitCompetenza(importo) {
+  const perc = Number(dettaglio?.spesa?.quotaInquilino);
+  const quota = Number.isFinite(perc) ? Math.min(100, Math.max(0, perc)) : 100;
+  const tot = Number(importo) || 0;
+  const inquilino = Math.round(((tot * quota) / 100) * 100) / 100;
+  const proprieta = Math.round((tot - inquilino) * 100) / 100;
+  return { inquilino, proprieta };
+}
+
+function testoCompetenzaSpesa(spesa) {
+  const competenza = spesa?.competenza || "INQUILINO";
+  const quota = Number(spesa?.quotaInquilino);
+  const inq = Number.isFinite(quota) ? quota : 100;
+  const prop = Math.round((100 - inq) * 100) / 100;
+  const fmt = (n) =>
+    n.toLocaleString("it-IT", { maximumFractionDigits: 2 });
+  if (competenza === "PROPRIETARIO") return "Solo proprietà";
+  if (competenza === "ENTRAMBI") {
+    return `Entrambi · inquilino ${fmt(inq)}% · proprietà ${fmt(prop)}%`;
+  }
+  return "Tutta all'inquilino";
+}
+
 function formatDataIt(iso) {
   if (!iso) return "—";
   const [y, m, d] = iso.split("-");
@@ -122,6 +146,7 @@ function renderRiepilogo() {
     <div class="riepilogo-item"><span>Totale</span><strong>${formatEuro(Number(s.cifra) + Number(s.spesePagamento))} €</strong></div>
     <div class="riepilogo-item"><span>Giorni spesa</span><strong>${dettaglio.giorni}</strong></div>
     <div class="riepilogo-item"><span>Ripartizione</span><strong>${dettaglio.ripartizione}</strong></div>
+    <div class="riepilogo-item"><span>Chi paga</span><strong>${testoCompetenzaSpesa(s)}</strong></div>
     <div class="riepilogo-item"><span>Stato</span><strong>${s.stato}</strong></div>
     <div class="riepilogo-item"><span>Totale periodi</span><strong>${formatEuro(dettaglio.totaleRiparto)} €</strong></div>
   `;
@@ -175,8 +200,13 @@ function aggiornaCelleCalcolate(tbody, quote) {
     if (!q) continue;
     const cellP = tr.querySelector(".cell-parziale");
     const cellI = tr.querySelector(".cell-importo");
+    const cellInq = tr.querySelector(".cell-inquilino");
+    const cellProp = tr.querySelector(".cell-proprieta");
     if (cellP) cellP.textContent = formatNumero(q.baseCalcolo);
     if (cellI) cellI.textContent = formatEuro(q.importo);
+    const split = splitCompetenza(q.importo);
+    if (cellInq) cellInq.textContent = formatEuro(split.inquilino);
+    if (cellProp) cellProp.textContent = formatEuro(split.proprieta);
   }
 }
 
@@ -225,6 +255,8 @@ function rigaQuotaModificabile(q, { usaIdRiparto = false, onChange } = {}) {
     </td>
     <td class="num cell-parziale"></td>
     <td class="num cell-importo"></td>
+    <td class="num cell-inquilino"></td>
+    <td class="num cell-proprieta"></td>
   `;
   const celle = tr.querySelectorAll("td");
   celle[0].textContent = q.proprietaUnita;
@@ -238,6 +270,9 @@ function rigaQuotaModificabile(q, { usaIdRiparto = false, onChange } = {}) {
   inpPerc.value = String(q.percentuale);
   tr.querySelector(".cell-parziale").textContent = formatNumero(q.baseCalcolo);
   tr.querySelector(".cell-importo").textContent = formatEuro(q.importo);
+  const splitRiga = splitCompetenza(q.importo);
+  tr.querySelector(".cell-inquilino").textContent = formatEuro(splitRiga.inquilino);
+  tr.querySelector(".cell-proprieta").textContent = formatEuro(splitRiga.proprieta);
 
   const applica = () => {
     q.peso = Number(inpPeso.value);
@@ -283,7 +318,7 @@ function renderAnteprima(proposta) {
   const corpo = $("#corpo-anteprima");
   corpo.innerHTML = "";
   if (!propostaCorrente.quote.length) {
-    corpo.innerHTML = `<tr><td colspan="6">Nessuna quota proposta.</td></tr>`;
+    corpo.innerHTML = `<tr><td colspan="8">Nessuna quota proposta.</td></tr>`;
     return;
   }
   for (const q of propostaCorrente.quote) {
@@ -301,6 +336,7 @@ function rigaQuotaSolaLettura(q) {
   tr.innerHTML =
     `<td></td><td></td>` +
     `<td class="num"></td><td class="num"></td>` +
+    `<td class="num"></td><td class="num"></td>` +
     `<td class="num"></td><td class="num"></td>`;
   const c = tr.querySelectorAll("td");
   c[0].textContent = q.proprietaUnita;
@@ -311,6 +347,9 @@ function rigaQuotaSolaLettura(q) {
   c[3].textContent = formatNumero(q.percentuale);
   c[4].textContent = formatNumero(q.baseCalcolo);
   c[5].textContent = formatEuro(q.importo);
+  const splitLetto = splitCompetenza(q.importo);
+  c[6].textContent = formatEuro(splitLetto.inquilino);
+  c[7].textContent = formatEuro(splitLetto.proprieta);
   return tr;
 }
 
@@ -400,6 +439,8 @@ function renderPeriodi() {
               <th class="num">%</th>
               <th class="num">Parziale</th>
               <th class="num">Importo €</th>
+              <th class="num">Inquilino €</th>
+              <th class="num">Proprietà €</th>
             </tr>
           </thead>
           <tbody></tbody>
@@ -410,6 +451,7 @@ function renderPeriodi() {
                 <strong class="periodo-totale-val"></strong>
                 <span class="periodo-totale-check"></span>
               </td>
+              <td colspan="2"></td>
             </tr>
           </tfoot>
         </table>

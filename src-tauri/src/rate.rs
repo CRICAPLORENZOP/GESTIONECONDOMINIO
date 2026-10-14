@@ -310,7 +310,7 @@ pub fn riepilogo_rendiconto_occupante(
 
             let quota: f64 = conn
                 .query_row(
-                    "SELECT COALESCE(SUM(r.Importo), 0)
+                    "SELECT COALESCE(SUM(r.Importo * COALESCE(s.QuotaInquilino, 100) / 100.0), 0)
                      FROM riparto_periodo r
                      INNER JOIN periodo_spesa p ON p.IdPeriodo = r.IdPeriodo
                      INNER JOIN spesa s ON s.IdSpesa = p.IdSpesa
@@ -347,9 +347,10 @@ pub fn riepilogo_rendiconto_occupante(
 
             let quota: f64 = conn
                 .query_row(
-                    "SELECT COALESCE(SUM(r.Importo), 0)
+                    "SELECT COALESCE(SUM(r.Importo * COALESCE(s.QuotaInquilino, 100) / 100.0), 0)
                      FROM riparto_periodo r
                      INNER JOIN periodo_spesa p ON p.IdPeriodo = r.IdPeriodo
+                     INNER JOIN spesa s ON s.IdSpesa = p.IdSpesa
                      WHERE p.Archivia != 0
                        AND TRIM(p.RendicontoDel) = ?1
                        AND r.IdOccupante = ?2",
@@ -435,7 +436,7 @@ pub fn conguaglio_occupanti(
              FROM occupante o
              INNER JOIN unita u ON u.IdUnita = o.IdUnita
              LEFT JOIN (
-                 SELECT r.IdOccupante, SUM(r.Importo) AS Quota
+                 SELECT r.IdOccupante, SUM(r.Importo * COALESCE(s.QuotaInquilino, 100) / 100.0) AS Quota
                  FROM riparto_periodo r
                  INNER JOIN periodo_spesa p ON p.IdPeriodo = r.IdPeriodo
                  INNER JOIN spesa s ON s.IdSpesa = p.IdSpesa
@@ -460,9 +461,10 @@ pub fn conguaglio_occupanti(
              FROM occupante o
              INNER JOIN unita u ON u.IdUnita = o.IdUnita
              LEFT JOIN (
-                 SELECT r.IdOccupante, SUM(r.Importo) AS Quota
+                 SELECT r.IdOccupante, SUM(r.Importo * COALESCE(s.QuotaInquilino, 100) / 100.0) AS Quota
                  FROM riparto_periodo r
                  INNER JOIN periodo_spesa p ON p.IdPeriodo = r.IdPeriodo
+                 INNER JOIN spesa s ON s.IdSpesa = p.IdSpesa
                  WHERE p.Archivia != 0 AND TRIM(p.RendicontoDel) = ?1
                  GROUP BY r.IdOccupante
              ) q ON q.IdOccupante = o.IdOccupante

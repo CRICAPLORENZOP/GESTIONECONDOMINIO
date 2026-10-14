@@ -997,6 +997,12 @@ pub struct Spesa {
     /// Nome file relativo nella cartella `{db}_allegati` (es. spesa_12.pdf).
     #[serde(default)]
     pub percorso_allegato: String,
+    /// Chi paga: INQUILINO, PROPRIETARIO oppure ENTRAMBI.
+    #[serde(default = "competenza_default")]
+    pub competenza: String,
+    /// Percentuale a carico dell'inquilino (0–100). Il resto è della proprietà.
+    #[serde(default = "quota_inquilino_default")]
+    pub quota_inquilino: f64,
     pub gruppo_spesa: String,
     pub giorni: i64,
     /// True se esiste almeno un periodo di riparto per questa spesa.
@@ -1022,6 +1028,42 @@ pub struct SpesaInput {
     pub note_spesa: String,
     #[serde(default)]
     pub gestione: String,
+    /// INQUILINO, PROPRIETARIO oppure ENTRAMBI.
+    #[serde(default = "competenza_default")]
+    pub competenza: String,
+    /// Usata solo se competenza = ENTRAMBI. Altrimenti viene ricalcolata.
+    #[serde(default = "quota_inquilino_default")]
+    pub quota_inquilino: f64,
+}
+
+fn competenza_default() -> String {
+    "INQUILINO".to_string()
+}
+
+fn quota_inquilino_default() -> f64 {
+    100.0
+}
+
+const COMPETENZE_SPESA: &[&str] = &["INQUILINO", "PROPRIETARIO", "ENTRAMBI"];
+
+/// La quota inquilino dipende dalla competenza scelta.
+fn quota_inquilino_da_competenza(competenza: &str, quota: f64) -> Result<f64, String> {
+    match competenza {
+        "INQUILINO" => Ok(100.0),
+        "PROPRIETARIO" => Ok(0.0),
+        "ENTRAMBI" => {
+            if !quota.is_finite() || quota < 0.0 || quota > 100.0 {
+                return Err(
+                    "La quota inquilino deve essere un numero tra 0 e 100.".into(),
+                );
+            }
+            Ok(quota)
+        }
+        _ => Err(format!(
+            "Competenza non valida. Scegli uno tra: {}.",
+            COMPETENZE_SPESA.join(", ")
+        )),
+    }
 }
 
 fn normalizza_spesa_input(input: SpesaInput) -> Result<SpesaInput, String> {
@@ -1053,6 +1095,9 @@ fn normalizza_spesa_input(input: SpesaInput) -> Result<SpesaInput, String> {
         return Err("Data emissione non valida. Usa AAAA-MM-GG oppure lasciala vuota.".into());
     }
 
+    let competenza = input.competenza.trim().to_string();
+    let quota_inquilino = quota_inquilino_da_competenza(&competenza, input.quota_inquilino)?;
+
     Ok(SpesaInput {
         id_tipologia: input.id_tipologia,
         spesa_da,
@@ -1065,6 +1110,8 @@ fn normalizza_spesa_input(input: SpesaInput) -> Result<SpesaInput, String> {
         num_fattura: input.num_fattura.trim().to_string(),
         note_spesa: input.note_spesa.trim().to_string(),
         gestione: input.gestione.trim().to_string(),
+        competenza,
+        quota_inquilino,
     })
 }
 
@@ -1101,7 +1148,9 @@ fn mappa_spesa(row: &rusqlite::Row<'_>) -> rusqlite::Result<Spesa> {
         note_spesa: row.get(10)?,
         gestione: row.get(11)?,
         percorso_allegato: row.get(12)?,
-        gruppo_spesa: row.get(13)?,
+        competenza: row.get(13)?,
+        quota_inquilino: row.get(14)?,
+        gruppo_spesa: row.get(15)?,
         giorni,
         ha_periodi: false,
         archivia_parziale: false,
@@ -1125,7 +1174,7 @@ fn elenco_spese(state: State<AppState>) -> Result<Vec<Spesa>, String> {
             .prepare(
                 "SELECT s.IdSpesa, s.IdTipologia, s.SpesaDa, s.SpesaA, s.Cifra, s.SpesePagamento,
                         s.Descrizione, s.Stato, s.DataEmissione, s.NumFattura, s.NoteSpesa,
-                        s.Gestione, s.PercorsoAllegato, t.GruppoSpesa
+                        s.Gestione, s.PercorsoAllegato, s.Competenza, s.QuotaInquilino, t.GruppoSpesa
                  FROM spesa s
                  INNER JOIN tipologia_spesa t ON t.IdTipologiaSpesa = s.IdTipologia
                  ORDER BY t.GruppoSpesa ASC, s.SpesaDa ASC, s.IdSpesa ASC",
@@ -1154,8 +1203,9 @@ fn crea_spesa(state: State<AppState>, dati: SpesaInput) -> Result<Spesa, String>
         conn.execute(
             "INSERT INTO spesa (
                 IdTipologia, SpesaDa, SpesaA, Cifra, SpesePagamento,
-                Descrizione, Stato, DataEmissione, NumFattura, NoteSpesa, Gestione
-             ) VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11)",
+                Descrizione, Stato, DataEmissione, NumFattura, NoteSpesa, Gestione,
+                Competenza, QuotaInquilino
+             ) VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11, ?12, ?13)",
             params![
                 dati.id_tipologia,
                 dati.spesa_da,
@@ -1167,7 +1217,9 @@ fn crea_spesa(state: State<AppState>, dati: SpesaInput) -> Result<Spesa, String>
                 dati.data_emissione,
                 dati.num_fattura,
                 dati.note_spesa,
-                dati.gestione
+                dati.gestione,
+                dati.competenza,
+                dati.quota_inquilino
             ],
         )
         .map_err(|e| e.to_string())?;
@@ -1177,7 +1229,7 @@ fn crea_spesa(state: State<AppState>, dati: SpesaInput) -> Result<Spesa, String>
             .query_row(
                 "SELECT s.IdSpesa, s.IdTipologia, s.SpesaDa, s.SpesaA, s.Cifra, s.SpesePagamento,
                         s.Descrizione, s.Stato, s.DataEmissione, s.NumFattura, s.NoteSpesa,
-                        s.Gestione, s.PercorsoAllegato, t.GruppoSpesa
+                        s.Gestione, s.PercorsoAllegato, s.Competenza, s.QuotaInquilino, t.GruppoSpesa
                  FROM spesa s
                  INNER JOIN tipologia_spesa t ON t.IdTipologiaSpesa = s.IdTipologia
                  WHERE s.IdSpesa = ?1",
@@ -1204,8 +1256,9 @@ fn aggiorna_spesa(
                 "UPDATE spesa
                  SET IdTipologia = ?1, SpesaDa = ?2, SpesaA = ?3, Cifra = ?4,
                      SpesePagamento = ?5, Descrizione = ?6, Stato = ?7,
-                     DataEmissione = ?8, NumFattura = ?9, NoteSpesa = ?10, Gestione = ?11
-                 WHERE IdSpesa = ?12",
+                     DataEmissione = ?8, NumFattura = ?9, NoteSpesa = ?10, Gestione = ?11,
+                     Competenza = ?12, QuotaInquilino = ?13
+                 WHERE IdSpesa = ?14",
                 params![
                     dati.id_tipologia,
                     dati.spesa_da,
@@ -1218,6 +1271,8 @@ fn aggiorna_spesa(
                     dati.num_fattura,
                     dati.note_spesa,
                     dati.gestione,
+                    dati.competenza,
+                    dati.quota_inquilino,
                     id_spesa
                 ],
             )
@@ -1234,7 +1289,7 @@ fn aggiorna_spesa(
             .query_row(
                 "SELECT s.IdSpesa, s.IdTipologia, s.SpesaDa, s.SpesaA, s.Cifra, s.SpesePagamento,
                         s.Descrizione, s.Stato, s.DataEmissione, s.NumFattura, s.NoteSpesa,
-                        s.Gestione, s.PercorsoAllegato, t.GruppoSpesa
+                        s.Gestione, s.PercorsoAllegato, s.Competenza, s.QuotaInquilino, t.GruppoSpesa
                  FROM spesa s
                  INNER JOIN tipologia_spesa t ON t.IdTipologiaSpesa = s.IdTipologia
                  WHERE s.IdSpesa = ?1",
@@ -1335,7 +1390,7 @@ fn leggi_spesa_completa(conn: &Connection, id_spesa: i64) -> Result<Spesa, Strin
         .query_row(
             "SELECT s.IdSpesa, s.IdTipologia, s.SpesaDa, s.SpesaA, s.Cifra, s.SpesePagamento,
                     s.Descrizione, s.Stato, s.DataEmissione, s.NumFattura, s.NoteSpesa,
-                    s.Gestione, s.PercorsoAllegato, t.GruppoSpesa
+                    s.Gestione, s.PercorsoAllegato, s.Competenza, s.QuotaInquilino, t.GruppoSpesa
              FROM spesa s
              INNER JOIN tipologia_spesa t ON t.IdTipologiaSpesa = s.IdTipologia
              WHERE s.IdSpesa = ?1",
