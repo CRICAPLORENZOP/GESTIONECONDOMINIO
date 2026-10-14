@@ -70,8 +70,20 @@
             Stampa
           </button>
           <div class="rip-totale-head" id="rip-totale-head" hidden>
-            <span class="rip-totale-lbl">Totale visualizzato</span>
-            <strong id="rip-totale-val">€ 0,00</strong>
+            <div class="rip-totale-voce rip-totale-unico">
+              <span class="rip-totale-lbl">Totale</span>
+              <strong id="rip-totale-unico">€ 0,00</strong>
+            </div>
+            <div class="rip-totali-doppi">
+              <div class="rip-totale-voce">
+                <span class="rip-totale-lbl">Totale occupanti</span>
+                <strong id="rip-totale-occupanti">€ 0,00</strong>
+              </div>
+              <div class="rip-totale-voce">
+                <span class="rip-totale-lbl">Totale proprietà</span>
+                <strong id="rip-totale-proprieta">€ 0,00</strong>
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -93,6 +105,8 @@
   </p>
 
   <div id="rip-corpo"></div>
+
+  <div id="rip-riepiloghi" class="rip-riepiloghi" hidden></div>
 
   <!-- Solo per stampa/PDF (nascosto a schermo) -->
   <div id="rip-stampa" class="rip-stampa" hidden aria-hidden="true"></div>

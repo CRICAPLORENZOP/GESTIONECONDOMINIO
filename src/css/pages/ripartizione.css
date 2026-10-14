@@ -91,6 +91,20 @@
   display: flex;
   flex-direction: column;
   align-items: flex-end;
+  gap: 0.35rem;
+}
+
+.page-ripartizione .rip-totali-doppi {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 0.35rem;
+}
+
+.page-ripartizione .rip-totale-voce {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
   gap: 0.05rem;
   padding: 0.2rem 0.55rem;
   border: 1px solid #e0c43a;
@@ -106,7 +120,7 @@
   color: var(--ink-muted);
 }
 
-.page-ripartizione .rip-totale-head strong {
+.page-ripartizione .rip-totale-voce strong {
   font-size: 1.05rem;
   font-variant-numeric: tabular-nums;
   line-height: 1.15;
@@ -496,6 +510,77 @@
   display: none;
 }
 
+/* Riepiloghi in fondo alla pagina (stessi numeri della stampa) */
+.page-ripartizione .rip-riepiloghi:not([hidden]) {
+  display: grid;
+  grid-template-columns: minmax(18rem, 26rem) minmax(22rem, 1fr);
+  gap: 1rem;
+  align-items: start;
+  margin-top: 1.25rem;
+}
+
+.page-ripartizione .rip-riepilogo-box {
+  min-width: 0;
+  padding: 0.7rem 0.8rem 0.85rem;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--surface, #fff);
+}
+
+.page-ripartizione .rip-riepilogo-box h2 {
+  margin: 0 0 0.55rem;
+  font-size: 0.95rem;
+  font-weight: 700;
+}
+
+.page-ripartizione .rip-riepilogo-box .rip-stampa-prop-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.82rem;
+}
+
+.page-ripartizione .rip-riepilogo-box .rip-stampa-prop-table th {
+  padding: 0.35rem 0.4rem;
+  text-align: left;
+  font-size: 0.68rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: var(--ink-muted);
+  border-bottom: 1px solid var(--line);
+  background: #e4efe8;
+}
+
+.page-ripartizione .rip-riepilogo-box .rip-stampa-prop-table td {
+  padding: 0.28rem 0.4rem;
+  border-bottom: 1px solid #e8eeea;
+  vertical-align: top;
+}
+
+.page-ripartizione .rip-riepilogo-box .rip-stampa-prop-table th.num,
+.page-ripartizione .rip-riepilogo-box .rip-stampa-prop-table td.num {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.page-ripartizione .rip-riepilogo-box .rip-stampa-prop-table tr.rip-stampa-prop-sub td {
+  font-weight: 700;
+  background: #eef6f1;
+  border-top: 1px solid #c5ddd0;
+}
+
+.page-ripartizione .rip-riepilogo-box .rip-stampa-prop-table tfoot td {
+  font-weight: 700;
+  background: #d4ebe0;
+  border-top: 1px solid #9fcbb5;
+}
+
+@media (max-width: 900px) {
+  .page-ripartizione .rip-riepiloghi:not([hidden]) {
+    grid-template-columns: 1fr;
+  }
+}
+
 /* ——— Stampa / PDF A4 verticale molto compatto ——— */
 @media print {
   @page {
@@ -515,6 +600,7 @@
   .page-ripartizione .rip-head,
   .page-ripartizione .filtri-riga,
   .page-ripartizione #rip-corpo,
+  .page-ripartizione #rip-riepiloghi,
   .page-ripartizione #rip-vuoto,
   .page-ripartizione #rip-error,
   .page-ripartizione .btn-vai-spesa {
@@ -566,13 +652,20 @@
 
   .page-ripartizione .rip-stampa-totale-gen {
     display: flex;
-    justify-content: flex-end;
-    align-items: center;
-    gap: 0.35rem;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 0.12rem;
     margin: 0 0 0.25rem;
     font-size: 8pt;
     font-weight: 700;
     line-height: 1.15;
+  }
+
+  .page-ripartizione .rip-stampa-totale-riga {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 0.35rem;
   }
 
   .page-ripartizione .rip-stampa-totale-gen strong {
@@ -699,6 +792,20 @@
     text-align: right;
     font-variant-numeric: tabular-nums;
     white-space: nowrap;
+  }
+
+  .page-ripartizione .rip-stampa-prop-table tr.rip-stampa-prop-sub td {
+    font-weight: 700;
+    background: #eef6f1;
+    border-top: 1px solid #c5ddd0;
+    border-bottom: 1px solid #9fcbb5;
+  }
+
+  .page-ripartizione .rip-stampa-prop-table tfoot td {
+    padding: 0.08rem 0.2rem;
+    font-weight: 700;
+    background: #d4ebe0;
+    border-top: 1px solid #9fcbb5;
   }
 
   .page-ripartizione .rip-stampa-prop-tot {

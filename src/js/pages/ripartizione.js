@@ -1,7 +1,6 @@
 import {
   aggiornaQuotePeriodo,
   reportRipartizioneSpeseConteggiate,
-  reportRiepilogoRipartizione,
 } from "../api.js";
 import { chiediConferma } from "../conferma.js";
 
@@ -61,6 +60,48 @@ function formatDataIt(iso) {
 
 function arrotondaEuro(valore) {
   return Math.round(Number(valore || 0) * 100) / 100;
+}
+
+/** Percentuale a carico dell'occupante (inquilino). Il resto è della proprietà. */
+function quotaInquilinoSpesa(spesa) {
+  const competenza = spesa?.competenza || "INQUILINO";
+  if (competenza === "PROPRIETARIO") return 0;
+  if (competenza === "INQUILINO") return 100;
+  const quota = Number(spesa?.quotaInquilino);
+  if (!Number.isFinite(quota)) return 100;
+  return Math.min(100, Math.max(0, quota));
+}
+
+function testoChiPaga(spesa) {
+  const competenza = spesa?.competenza || "INQUILINO";
+  const quota = quotaInquilinoSpesa(spesa);
+  if (competenza === "PROPRIETARIO" || quota <= 0) return "Solo proprietà";
+  if (competenza === "ENTRAMBI") {
+    return `Entrambi ${formatNum(quota, 2)}% / ${formatNum(arrotondaEuro(100 - quota), 2)}%`;
+  }
+  return "Tutta inquilino";
+}
+
+/** Divide l'importo della quota secondo Chi paga. */
+function splitImporto(spesa, importo) {
+  const tot = Number(importo) || 0;
+  const occupante = arrotondaEuro((tot * quotaInquilinoSpesa(spesa)) / 100);
+  const proprieta = arrotondaEuro(tot - occupante);
+  return { occupante, proprieta };
+}
+
+function sommaSplitQuote(spesa, quote) {
+  let occupanti = 0;
+  let proprieta = 0;
+  for (const q of quote || []) {
+    const split = splitImporto(spesa, q.importo);
+    occupanti += split.occupante;
+    proprieta += split.proprieta;
+  }
+  return {
+    occupanti: arrotondaEuro(occupanti),
+    proprieta: arrotondaEuro(proprieta),
+  };
 }
 
 function messaggioListaVuota() {
@@ -165,12 +206,17 @@ function aggiornaBannerFiltro() {
   }
 }
 
-function aggiornaTotaleHeader(totale) {
+function aggiornaTotaleHeader(occupanti, proprieta) {
   const box = $("#rip-totale-head");
-  const val = $("#rip-totale-val");
-  if (!box || !val) return;
-  const n = Math.round(Number(totale || 0) * 100) / 100;
-  val.textContent = `€ ${formatEuro(n)}`;
+  const valUnico = $("#rip-totale-unico");
+  const valOcc = $("#rip-totale-occupanti");
+  const valProp = $("#rip-totale-proprieta");
+  if (!box || !valUnico || !valOcc || !valProp) return;
+  const occ = arrotondaEuro(occupanti);
+  const prop = arrotondaEuro(proprieta);
+  valUnico.textContent = `€ ${formatEuro(arrotondaEuro(occ + prop))}`;
+  valOcc.textContent = `€ ${formatEuro(occ)}`;
+  valProp.textContent = `€ ${formatEuro(prop)}`;
   box.hidden = false;
 }
 
@@ -447,18 +493,62 @@ function sincronizzaDomDopoEdit(idUnita, campo, valore, idPeriodoFocus) {
       }
 
       const cellParz = tr.querySelector(".cell-parziale");
-      const cellImp = tr.querySelector(".cell-importo");
+      const cellOcc = tr.querySelector(".cell-occupante");
+      const cellProp = tr.querySelector(".cell-proprieta");
+      const split = splitImporto(found.spesa, q.importo);
       if (cellParz) cellParz.textContent = formatNum(q.baseCalcolo, 2);
-      if (cellImp) cellImp.textContent = `€ ${formatEuro(q.importo)}`;
+      if (cellOcc) cellOcc.textContent = `€ ${formatEuro(split.occupante)}`;
+      if (cellProp) cellProp.textContent = `€ ${formatEuro(split.proprieta)}`;
     }
 
-    const footBox = blocco.querySelector(".tot-euro-box");
-    if (footBox) {
-      const visibili = (p.quote || []).filter(quotePassanoFiltri);
-      const somma = visibili.reduce((s, q) => s + Number(q.importo || 0), 0);
-      footBox.textContent = formatEuro(Math.round(somma * 100) / 100);
-    }
+    const visibili = (p.quote || []).filter(quotePassanoFiltri);
+    const somma = sommaSplitQuote(found.spesa, visibili);
+    const boxOcc = blocco.querySelector(".tot-occupanti");
+    const boxProp = blocco.querySelector(".tot-proprieta");
+    if (boxOcc) boxOcc.textContent = formatEuro(somma.occupanti);
+    if (boxProp) boxProp.textContent = formatEuro(somma.proprieta);
   }
+  aggiornaTotaliCardEHeader(bozzaDati);
+}
+
+/** Dopo una modifica in anteprima, ricalcola i totali occupanti e proprietà. */
+function aggiornaTotaliCardEHeader(dati) {
+  let totOcc = 0;
+  let totProp = 0;
+  for (const spesa of dati?.spese || []) {
+    if (
+      filtroTipologia != null &&
+      (spesa.gruppoSpesa || "").trim() !== filtroTipologia
+    ) {
+      continue;
+    }
+    if (nascondiSpesaPerOccupante(spesa)) continue;
+
+    let occS = 0;
+    let propS = 0;
+    let visibile = false;
+    for (const p of spesa.periodi || []) {
+      const quote = (p.quote || []).filter(quotePassanoFiltri);
+      if (!quote.length) continue;
+      visibile = true;
+      const somma = sommaSplitQuote(spesa, quote);
+      occS += somma.occupanti;
+      propS += somma.proprieta;
+    }
+    if (!visibile) continue;
+    occS = arrotondaEuro(occS);
+    propS = arrotondaEuro(propS);
+    totOcc += occS;
+    totProp += propS;
+
+    const card = root?.querySelector(`.spesa-card[data-id-spesa="${spesa.idSpesa}"]`);
+    const boxOcc = card?.querySelector(".tot-occupanti-spesa");
+    const boxProp = card?.querySelector(".tot-proprieta-spesa");
+    if (boxOcc) boxOcc.textContent = `€ ${formatEuro(occS)}`;
+    if (boxProp) boxProp.textContent = `€ ${formatEuro(propS)}`;
+  }
+  aggiornaTotaleHeader(arrotondaEuro(totOcc), arrotondaEuro(totProp));
+  aggiornaRiepiloghiVideo(dati);
 }
 
 function selezionaPeriodoSeServe(idPeriodo, chk, blocco) {
@@ -616,13 +706,15 @@ function renderDati(dati) {
   if (!dati.spese?.length) {
     vuoto.hidden = false;
     vuoto.textContent = messaggioListaVuota();
-    aggiornaTotaleHeader(0);
+    aggiornaTotaleHeader(0, 0);
+    aggiornaRiepiloghiVideo(dati);
     return;
   }
 
   let gestioneCorrente = null;
   let mostrate = 0;
-  let totaleVisualizzato = 0;
+  let totaleOccupanti = 0;
+  let totaleProprieta = 0;
 
   for (const spesa of dati.spese) {
     if (
@@ -653,6 +745,7 @@ function renderDati(dati) {
 
     const card = document.createElement("article");
     card.className = "spesa-card";
+    card.dataset.idSpesa = String(spesa.idSpesa);
 
     const head = document.createElement("div");
     head.className = "spesa-head";
@@ -660,6 +753,7 @@ function renderDati(dati) {
       <div class="campo"><span class="lbl">IdSpe</span><span class="val" data-k="id"></span></div>
       <div class="campo"><span class="lbl">Genere</span><span class="val val-genere" data-k="gen"></span></div>
       <div class="campo"><span class="lbl">Ripartizione</span><span class="val" data-k="rip"></span></div>
+      <div class="campo"><span class="lbl">Chi paga</span><span class="val" data-k="paga"></span></div>
       <div class="campo"><span class="lbl">Da</span><span class="val" data-k="da"></span></div>
       <div class="campo"><span class="lbl">A</span><span class="val" data-k="a"></span></div>
       <div class="campo"><span class="lbl">Gg</span><span class="val" data-k="gg"></span></div>
@@ -675,6 +769,7 @@ function renderDati(dati) {
       applicaFiltroTipologia(spesa.gruppoSpesa);
     });
     head.querySelector('[data-k="rip"]').textContent = spesa.ripartizione || "—";
+    head.querySelector('[data-k="paga"]').textContent = testoChiPaga(spesa);
     head.querySelector('[data-k="da"]').textContent = formatDataIt(spesa.spesaDa);
     head.querySelector('[data-k="a"]').textContent = formatDataIt(spesa.spesaA);
     head.querySelector('[data-k="gg"]').textContent = String(spesa.giorni);
@@ -683,7 +778,8 @@ function renderDati(dati) {
     head.querySelector('[data-k="tot"]').textContent = `€ ${formatEuro(spesa.totale)}`;
     card.appendChild(head);
 
-    let totaleQuoteSpesaFiltrato = 0;
+    let totaleOccupantiSpesa = 0;
+    let totaleProprietaSpesa = 0;
 
     for (const { periodo: p, quote } of periodiVisibili) {
       const blocco = document.createElement("div");
@@ -704,7 +800,7 @@ function renderDati(dati) {
         <div class="campo"><span class="lbl">A</span><span class="val" data-k="a"></span></div>
         <div class="campo"><span class="lbl">Giorni</span><span class="val" data-k="gg"></span></div>
         <span class="periodo-totale">Totale periodo conteggiato: € <span data-k="imp"></span></span>
-        <button type="button" class="btn-vai-spesa">Vai alla spesa</button>
+        <button type="button" class="btn-vai-spesa">Vai a Ripartizione</button>
       `;
       pHead.querySelector('[data-k="da"]').textContent = formatDataIt(p.periodoDa);
       pHead.querySelector('[data-k="a"]').textContent = formatDataIt(p.periodoA);
@@ -751,13 +847,15 @@ function renderDati(dati) {
             <th class="num">Parti</th>
             <th class="num">Millesimi</th>
             <th class="num">Quota</th>
-            <th class="num">Importo</th>
+            <th class="num">Importo occupante</th>
+            <th class="num">Importo proprietà</th>
           </tr>
         </thead>
         <tbody></tbody>
       `;
       const tbody = table.querySelector("tbody");
-      let sommaQuote = 0;
+      let sommaOccupanti = 0;
+      let sommaProprieta = 0;
       for (const q of quote) {
         const tr = document.createElement("tr");
         tr.dataset.idUnita = String(q.idUnita ?? "");
@@ -772,7 +870,8 @@ function renderDati(dati) {
           <td class="num cell-parti"></td>
           <td class="num cell-mill"></td>
           <td class="num cell-parziale"></td>
-          <td class="num cell-importo"></td>
+          <td class="num cell-occupante"></td>
+          <td class="num cell-proprieta"></td>
         `;
         const td = tr.children;
         const prop = nomeProprieta(q) || "—";
@@ -842,45 +941,51 @@ function renderDati(dati) {
         }
 
         td[7].textContent = formatNum(q.baseCalcolo, 2);
-        td[8].textContent = `€ ${formatEuro(q.importo)}`;
-        sommaQuote += Number(q.importo) || 0;
+        const split = splitImporto(spesa, q.importo);
+        td[8].textContent = `€ ${formatEuro(split.occupante)}`;
+        td[9].textContent = `€ ${formatEuro(split.proprieta)}`;
+        sommaOccupanti += split.occupante;
+        sommaProprieta += split.proprieta;
         tbody.appendChild(tr);
       }
       blocco.appendChild(table);
 
-      sommaQuote = Math.round(sommaQuote * 100) / 100;
-      totaleQuoteSpesaFiltrato += sommaQuote;
+      sommaOccupanti = arrotondaEuro(sommaOccupanti);
+      sommaProprieta = arrotondaEuro(sommaProprieta);
+      totaleOccupantiSpesa += sommaOccupanti;
+      totaleProprietaSpesa += sommaProprieta;
 
       const foot = document.createElement("div");
       foot.className = "periodo-foot";
       foot.innerHTML = `
         <span>Totale quote: ${quote.length}</span>
-        <span>Tot €</span>
-        <span class="tot-euro-box"></span>
+        <span>Occupanti</span>
+        <span class="tot-euro-box tot-occupanti"></span>
+        <span>Proprietà</span>
+        <span class="tot-euro-box tot-proprieta"></span>
       `;
-      foot.querySelector(".tot-euro-box").textContent = formatEuro(sommaQuote);
+      foot.querySelector(".tot-occupanti").textContent = formatEuro(sommaOccupanti);
+      foot.querySelector(".tot-proprieta").textContent = formatEuro(sommaProprieta);
       blocco.appendChild(foot);
 
       card.appendChild(blocco);
     }
 
+    totaleOccupantiSpesa = arrotondaEuro(totaleOccupantiSpesa);
+    totaleProprietaSpesa = arrotondaEuro(totaleProprietaSpesa);
+    totaleOccupanti += totaleOccupantiSpesa;
+    totaleProprieta += totaleProprietaSpesa;
+
     const sFoot = document.createElement("div");
     sFoot.className = "spesa-foot";
-    sFoot.innerHTML = `<span></span><span></span>`;
-    const haFiltroQuote = filtroProprieta != null || filtroOccupante != null;
-    if (haFiltroQuote) {
-      const pezzi = [];
-      if (filtroProprieta) pezzi.push(`«${filtroProprieta}»`);
-      if (filtroOccupante) pezzi.push(`«${filtroOccupante}»`);
-      const totFiltrato = Math.round(totaleQuoteSpesaFiltrato * 100) / 100;
-      sFoot.children[0].textContent = `Totale ${pezzi.join(" / ")}`;
-      sFoot.children[1].textContent = `€ ${formatEuro(totFiltrato)}`;
-      totaleVisualizzato += totFiltrato;
-    } else {
-      sFoot.children[0].textContent = "Totale spesa";
-      sFoot.children[1].textContent = `€ ${formatEuro(spesa.totale)}`;
-      totaleVisualizzato += Number(spesa.totale) || 0;
-    }
+    sFoot.innerHTML = `
+      <span>Totale occupanti</span>
+      <span class="tot-euro-box tot-occupanti-spesa"></span>
+      <span>Totale proprietà</span>
+      <span class="tot-euro-box tot-proprieta-spesa"></span>
+    `;
+    sFoot.querySelector(".tot-occupanti-spesa").textContent = `€ ${formatEuro(totaleOccupantiSpesa)}`;
+    sFoot.querySelector(".tot-proprieta-spesa").textContent = `€ ${formatEuro(totaleProprietaSpesa)}`;
     card.appendChild(sFoot);
 
     corpo.appendChild(card);
@@ -892,11 +997,13 @@ function renderDati(dati) {
     vuoto.textContent = haFiltroAttivo()
       ? `Nessuna ripartizione per ${etichettaFiltriAttivi()}.`
       : messaggioListaVuota();
-    aggiornaTotaleHeader(0);
+    aggiornaTotaleHeader(0, 0);
+    aggiornaRiepiloghiVideo(dati);
     return;
   }
   vuoto.hidden = true;
-  aggiornaTotaleHeader(totaleVisualizzato);
+  aggiornaTotaleHeader(totaleOccupanti, totaleProprieta);
+  aggiornaRiepiloghiVideo(dati);
 }
 
 async function carica() {
@@ -928,6 +1035,11 @@ async function carica() {
   $("#rip-vuoto").hidden = true;
   const boxTot = $("#rip-totale-head");
   if (boxTot) boxTot.hidden = true;
+  const boxRiepiloghi = $("#rip-riepiloghi");
+  if (boxRiepiloghi) {
+    boxRiepiloghi.innerHTML = "";
+    boxRiepiloghi.hidden = true;
+  }
   aggiornaPulsanteTogliDate();
 
   try {
@@ -936,7 +1048,8 @@ async function carica() {
   } catch (err) {
     datiCache = null;
     $("#rip-corpo").innerHTML = "";
-    aggiornaTotaleHeader(0);
+    aggiornaTotaleHeader(0, 0);
+    aggiornaRiepiloghiVideo(null);
     mostraErrore($("#rip-error"), String(err));
   }
 }
@@ -957,39 +1070,194 @@ function el(tag, className, text) {
   return node;
 }
 
-function raggruppaPerProprieta(listaUnita) {
+/** Spezza un periodo sui cambi di anno. Ogni pezzo ha i suoi giorni. */
+function pezziPerAnno(periodoDa, periodoA) {
+  const da = dataUtc(periodoDa);
+  const a = dataUtc(periodoA);
+  if (da == null || a == null || a < da) return [{ anno: "—", giorni: 1 }];
+
+  const pezzi = [];
+  let cursor = da;
+  while (cursor <= a) {
+    const anno = new Date(cursor).getUTCFullYear();
+    const fine = Math.min(Date.UTC(anno, 11, 31), a);
+    const giorni = Math.round((fine - cursor) / 86400000) + 1;
+    pezzi.push({ anno: String(anno), giorni });
+    cursor = fine + 86400000;
+  }
+  return pezzi;
+}
+
+function dataUtc(iso) {
+  if (!iso || String(iso).length < 10) return null;
+  const [y, m, d] = String(iso).slice(0, 10).split("-").map(Number);
+  if (!y || !m || !d) return null;
+  return Date.UTC(y, m - 1, d);
+}
+
+/** Divide un importo tra gli anni del periodo, in base ai giorni. */
+function distribuisciPerAnni(periodoDa, periodoA, importo) {
+  const pezzi = pezziPerAnno(periodoDa, periodoA);
+  const totGiorni = pezzi.reduce((s, p) => s + p.giorni, 0) || 1;
+  const tot = Number(importo) || 0;
+  let assegnato = 0;
+  return pezzi.map((p, i) => {
+    const quota =
+      i === pezzi.length - 1
+        ? arrotondaEuro(tot - assegnato)
+        : arrotondaEuro((tot * p.giorni) / totGiorni);
+    assegnato += quota;
+    return { anno: p.anno, importo: quota };
+  });
+}
+
+/** Totali di stampa per anno: occupanti, proprietà e somma. */
+function aggregaChiPagaPerAnno(dati) {
   const map = new Map();
-  for (const u of listaUnita) {
-    const key = (u.proprieta || "(senza proprietà)").trim() || "(senza proprietà)";
-    if (!map.has(key)) {
-      map.set(key, {
-        proprieta: key,
-        totale: 0,
-        gestioniMap: new Map(),
-        unitaIds: [],
-      });
+  for (const spesa of dati?.spese || []) {
+    if (
+      filtroTipologia != null &&
+      (spesa.gruppoSpesa || "").trim() !== filtroTipologia
+    ) {
+      continue;
     }
-    const g = map.get(key);
-    g.totale += Number(u.totale) || 0;
-    g.unitaIds.push(u.idUnita);
-    for (const gest of u.gestioni || []) {
-      const prev = g.gestioniMap.get(gest.gestione) || 0;
-      g.gestioniMap.set(gest.gestione, prev + (Number(gest.totale) || 0));
+    if (nascondiSpesaPerOccupante(spesa)) continue;
+    for (const p of spesa.periodi || []) {
+      for (const q of p.quote || []) {
+        if (!quotePassanoFiltri(q)) continue;
+        const split = splitImporto(spesa, q.importo);
+        const partiOcc = distribuisciPerAnni(p.periodoDa, p.periodoA, split.occupante);
+        const partiProp = distribuisciPerAnni(p.periodoDa, p.periodoA, split.proprieta);
+        const anni = new Set([
+          ...partiOcc.map((x) => x.anno),
+          ...partiProp.map((x) => x.anno),
+        ]);
+        for (const anno of anni) {
+          if (!map.has(anno)) {
+            map.set(anno, { anno, occupanti: 0, proprietaEuro: 0 });
+          }
+          const g = map.get(anno);
+          g.occupanti += partiOcc.find((x) => x.anno === anno)?.importo || 0;
+          g.proprietaEuro += partiProp.find((x) => x.anno === anno)?.importo || 0;
+        }
+      }
     }
   }
   return [...map.values()]
     .map((g) => ({
-      proprieta: g.proprieta,
-      totale: arrotondaEuro(g.totale),
-      nUnita: g.unitaIds.length,
-      gestioni: [...g.gestioniMap.entries()]
-        .map(([gestione, totale]) => ({
-          gestione,
-          totale: arrotondaEuro(totale),
-        }))
-        .sort((a, b) => a.gestione.localeCompare(b.gestione, "it")),
+      anno: g.anno,
+      occupanti: arrotondaEuro(g.occupanti),
+      proprietaEuro: arrotondaEuro(g.proprietaEuro),
     }))
-    .sort((a, b) => a.proprieta.localeCompare(b.proprieta, "it"));
+    .sort((a, b) => String(a.anno).localeCompare(String(b.anno), "it"));
+}
+
+/** Totali di stampa per proprietà, spezzati per anno. */
+function aggregaChiPagaPerProprieta(dati) {
+  const map = new Map();
+  for (const spesa of dati?.spese || []) {
+    if (
+      filtroTipologia != null &&
+      (spesa.gruppoSpesa || "").trim() !== filtroTipologia
+    ) {
+      continue;
+    }
+    if (nascondiSpesaPerOccupante(spesa)) continue;
+    for (const p of spesa.periodi || []) {
+      for (const q of p.quote || []) {
+        if (!quotePassanoFiltri(q)) continue;
+        const key = nomeProprieta(q) || "(senza proprietà)";
+        if (!map.has(key)) {
+          map.set(key, { etichetta: key, anni: new Map() });
+        }
+        const gruppo = map.get(key);
+        const split = splitImporto(spesa, q.importo);
+        const partiOcc = distribuisciPerAnni(p.periodoDa, p.periodoA, split.occupante);
+        const partiProp = distribuisciPerAnni(p.periodoDa, p.periodoA, split.proprieta);
+        const anni = new Set([
+          ...partiOcc.map((x) => x.anno),
+          ...partiProp.map((x) => x.anno),
+        ]);
+        for (const anno of anni) {
+          if (!gruppo.anni.has(anno)) {
+            gruppo.anni.set(anno, { anno, occupanti: 0, proprietaEuro: 0 });
+          }
+          const g = gruppo.anni.get(anno);
+          g.occupanti += partiOcc.find((x) => x.anno === anno)?.importo || 0;
+          g.proprietaEuro += partiProp.find((x) => x.anno === anno)?.importo || 0;
+        }
+      }
+    }
+  }
+  return [...map.values()]
+    .map((g) => {
+      const anni = [...g.anni.values()]
+        .map((a) => ({
+          anno: a.anno,
+          occupanti: arrotondaEuro(a.occupanti),
+          proprietaEuro: arrotondaEuro(a.proprietaEuro),
+        }))
+        .sort((a, b) => String(a.anno).localeCompare(String(b.anno), "it"));
+      return {
+        etichetta: g.etichetta,
+        anni,
+        occupanti: arrotondaEuro(anni.reduce((s, a) => s + a.occupanti, 0)),
+        proprietaEuro: arrotondaEuro(anni.reduce((s, a) => s + a.proprietaEuro, 0)),
+      };
+    })
+    .sort((a, b) => a.etichetta.localeCompare(b.etichetta, "it"));
+}
+
+/** Tabella con una colonna di etichetta e le tre colonne dei totali. */
+function aggiungiTabellaTotali(contenitore, titolo, nomePrimaColonna, righe) {
+  contenitore.appendChild(el("h2", "rip-stampa-sez rip-stampa-sez-fine", titolo));
+  if (!righe.length) {
+    contenitore.appendChild(el("p", "rip-stampa-vuoto", "Nessun totale da stampare."));
+    return;
+  }
+
+  const table = document.createElement("table");
+  table.className = "rip-stampa-prop-table";
+  table.innerHTML = `
+    <thead>
+      <tr>
+        <th></th>
+        <th class="num">Totale occupanti</th>
+        <th class="num">Totale proprietà</th>
+        <th class="num">Totale</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  `;
+  table.querySelector("th").textContent = nomePrimaColonna;
+  const tbody = table.querySelector("tbody");
+  for (const g of righe) {
+    const tr = document.createElement("tr");
+    tr.innerHTML = `<td></td><td class="num"></td><td class="num"></td><td class="num"></td>`;
+    tr.children[0].textContent = g.etichetta;
+    tr.children[1].textContent = `€ ${formatEuro(g.occupanti)}`;
+    tr.children[2].textContent = `€ ${formatEuro(g.proprietaEuro)}`;
+    tr.children[3].textContent = `€ ${formatEuro(arrotondaEuro(g.occupanti + g.proprietaEuro))}`;
+    tbody.appendChild(tr);
+  }
+
+  const totOcc = arrotondaEuro(righe.reduce((acc, g) => acc + g.occupanti, 0));
+  const totProp = arrotondaEuro(righe.reduce((acc, g) => acc + g.proprietaEuro, 0));
+  const totUnico = arrotondaEuro(totOcc + totProp);
+  const tfoot = document.createElement("tfoot");
+  const trTot = document.createElement("tr");
+  trTot.innerHTML = `
+    <td>Totale</td>
+    <td class="num"></td>
+    <td class="num"></td>
+    <td class="num"></td>
+  `;
+  trTot.children[1].textContent = `€ ${formatEuro(totOcc)}`;
+  trTot.children[2].textContent = `€ ${formatEuro(totProp)}`;
+  trTot.children[3].textContent = `€ ${formatEuro(totUnico)}`;
+  tfoot.appendChild(trTot);
+  table.appendChild(tfoot);
+  contenitore.appendChild(table);
 }
 
 function costruisciSezioneSpesePeriodi(contenitore, dati) {
@@ -1000,11 +1268,12 @@ function costruisciSezioneSpesePeriodi(contenitore, dati) {
     contenitore.appendChild(
       el("p", "rip-stampa-vuoto", "Nessuna spesa con periodi da stampare.")
     );
-    return 0;
+    return { occupanti: 0, proprieta: 0 };
   }
 
   let gestioneCorrente = null;
-  let totaleVisualizzato = 0;
+  let totaleOccupanti = 0;
+  let totaleProprieta = 0;
   let mostrate = 0;
 
   for (const spesa of spese) {
@@ -1036,6 +1305,7 @@ function costruisciSezioneSpesePeriodi(contenitore, dati) {
       `#${spesa.idSpesa}`,
       spesa.gruppoSpesa || "",
       spesa.ripartizione || "",
+      testoChiPaga(spesa),
       `${formatDataIt(spesa.spesaDa)}–${formatDataIt(spesa.spesaA)}`,
       `${spesa.giorni} gg`,
       `€ ${formatEuro(spesa.totale)}`,
@@ -1044,7 +1314,8 @@ function costruisciSezioneSpesePeriodi(contenitore, dati) {
       .join(" · ");
     card.appendChild(head);
 
-    let totaleQuoteSpesaFiltrato = 0;
+    let totaleOccupantiSpesa = 0;
+    let totaleProprietaSpesa = 0;
 
     for (const { periodo: p, quote } of periodiVisibili) {
       const blocco = el("div", "rip-stampa-periodo");
@@ -1064,19 +1335,21 @@ function costruisciSezioneSpesePeriodi(contenitore, dati) {
             <th class="num">%</th>
             <th class="num">${usaMillesimi ? "Mill." : "Parti"}</th>
             <th class="num">Quota</th>
-            <th class="num">Importo</th>
+            <th class="num">Imp. occupante</th>
+            <th class="num">Imp. proprietà</th>
           </tr>
         </thead>
         <tbody></tbody>
       `;
       const tbody = table.querySelector("tbody");
-      let sommaQuote = 0;
+      let sommaOccupanti = 0;
+      let sommaProprieta = 0;
       for (const q of quote) {
         const tr = document.createElement("tr");
         tr.innerHTML = `
           <td></td><td></td><td></td><td></td>
           <td class="num"></td><td class="num"></td>
-          <td class="num"></td><td class="num"></td>
+          <td class="num"></td><td class="num"></td><td class="num"></td>
         `;
         const td = tr.children;
         td[0].textContent = (q.identificativo || "").trim() || "—";
@@ -1088,21 +1361,21 @@ function costruisciSezioneSpesePeriodi(contenitore, dati) {
           ? formatNum(q.peso, 2)
           : formatNum(q.peso, 0);
         td[6].textContent = formatNum(q.baseCalcolo, 2);
-        td[7].textContent = `€ ${formatEuro(q.importo)}`;
-        sommaQuote += Number(q.importo) || 0;
+        const split = splitImporto(spesa, q.importo);
+        td[7].textContent = `€ ${formatEuro(split.occupante)}`;
+        td[8].textContent = `€ ${formatEuro(split.proprieta)}`;
+        sommaOccupanti += split.occupante;
+        sommaProprieta += split.proprieta;
         tbody.appendChild(tr);
       }
       blocco.appendChild(table);
-      sommaQuote = arrotondaEuro(sommaQuote);
-      totaleQuoteSpesaFiltrato += sommaQuote;
+      totaleOccupantiSpesa += arrotondaEuro(sommaOccupanti);
+      totaleProprietaSpesa += arrotondaEuro(sommaProprieta);
       card.appendChild(blocco);
     }
 
-    if (haFiltroAttivo() && (filtroProprieta != null || filtroOccupante != null)) {
-      totaleVisualizzato += arrotondaEuro(totaleQuoteSpesaFiltrato);
-    } else {
-      totaleVisualizzato += Number(spesa.totale) || 0;
-    }
+    totaleOccupanti += arrotondaEuro(totaleOccupantiSpesa);
+    totaleProprieta += arrotondaEuro(totaleProprietaSpesa);
 
     contenitore.appendChild(card);
     mostrate += 1;
@@ -1120,19 +1393,19 @@ function costruisciSezioneSpesePeriodi(contenitore, dati) {
     );
   }
 
-  return arrotondaEuro(totaleVisualizzato);
+  return {
+    occupanti: arrotondaEuro(totaleOccupanti),
+    proprieta: arrotondaEuro(totaleProprieta),
+  };
 }
 
-function costruisciSezioneProprieta(contenitore, listaUnita) {
+/** Tabella proprietà: una riga per ogni anno, poi il totale di quella proprietà. */
+function aggiungiTabellaProprietaPerAnno(contenitore, gruppi) {
   contenitore.appendChild(
     el("h2", "rip-stampa-sez rip-stampa-sez-fine", "Riepilogo per proprietà")
   );
-
-  const gruppi = raggruppaPerProprieta(listaUnita || []);
   if (!gruppi.length) {
-    contenitore.appendChild(
-      el("p", "rip-stampa-vuoto", "Nessun totale per proprietà.")
-    );
+    contenitore.appendChild(el("p", "rip-stampa-vuoto", "Nessun totale da stampare."));
     return;
   }
 
@@ -1142,34 +1415,101 @@ function costruisciSezioneProprieta(contenitore, listaUnita) {
     <thead>
       <tr>
         <th>Proprietà</th>
-        <th class="num">Unità</th>
-        <th>Gestioni</th>
+        <th>Anno</th>
+        <th class="num">Totale occupanti</th>
+        <th class="num">Totale proprietà</th>
         <th class="num">Totale</th>
       </tr>
     </thead>
     <tbody></tbody>
   `;
   const tbody = table.querySelector("tbody");
-  for (const g of gruppi) {
-    const tr = document.createElement("tr");
-    tr.innerHTML = `<td></td><td class="num"></td><td></td><td class="num"></td>`;
-    tr.children[0].textContent = g.proprieta;
-    tr.children[1].textContent = String(g.nUnita);
-    tr.children[2].textContent = g.gestioni
-      .map((x) => `${x.gestione}: € ${formatEuro(x.totale)}`)
-      .join(" · ");
-    tr.children[3].textContent = `€ ${formatEuro(g.totale)}`;
-    tbody.appendChild(tr);
-  }
-  contenitore.appendChild(table);
+  let totOcc = 0;
+  let totProp = 0;
 
-  const tot = arrotondaEuro(
-    gruppi.reduce((acc, g) => acc + (Number(g.totale) || 0), 0)
-  );
-  const foot = el("div", "rip-stampa-prop-tot");
-  foot.innerHTML = `<span>Totale generale</span><strong></strong>`;
-  foot.querySelector("strong").textContent = `€ ${formatEuro(tot)}`;
-  contenitore.appendChild(foot);
+  for (const g of gruppi) {
+    const anni = g.anni || [];
+    anni.forEach((anno, i) => {
+      const tr = document.createElement("tr");
+      tr.innerHTML = `<td></td><td></td><td class="num"></td><td class="num"></td><td class="num"></td>`;
+      tr.children[0].textContent = i === 0 ? g.etichetta : "";
+      tr.children[1].textContent = anno.anno;
+      tr.children[2].textContent = `€ ${formatEuro(anno.occupanti)}`;
+      tr.children[3].textContent = `€ ${formatEuro(anno.proprietaEuro)}`;
+      tr.children[4].textContent = `€ ${formatEuro(arrotondaEuro(anno.occupanti + anno.proprietaEuro))}`;
+      tbody.appendChild(tr);
+    });
+
+    if (anni.length > 1) {
+      const tr = document.createElement("tr");
+      tr.className = "rip-stampa-prop-sub";
+      tr.innerHTML = `<td></td><td></td><td class="num"></td><td class="num"></td><td class="num"></td>`;
+      tr.children[0].textContent = "";
+      tr.children[1].textContent = "Totale";
+      tr.children[2].textContent = `€ ${formatEuro(g.occupanti)}`;
+      tr.children[3].textContent = `€ ${formatEuro(g.proprietaEuro)}`;
+      tr.children[4].textContent = `€ ${formatEuro(arrotondaEuro(g.occupanti + g.proprietaEuro))}`;
+      tbody.appendChild(tr);
+    }
+
+    totOcc += g.occupanti;
+    totProp += g.proprietaEuro;
+  }
+
+  totOcc = arrotondaEuro(totOcc);
+  totProp = arrotondaEuro(totProp);
+  const tfoot = document.createElement("tfoot");
+  const trTot = document.createElement("tr");
+  trTot.innerHTML = `
+    <td>Totale</td>
+    <td></td>
+    <td class="num"></td>
+    <td class="num"></td>
+    <td class="num"></td>
+  `;
+  trTot.children[2].textContent = `€ ${formatEuro(totOcc)}`;
+  trTot.children[3].textContent = `€ ${formatEuro(totProp)}`;
+  trTot.children[4].textContent = `€ ${formatEuro(arrotondaEuro(totOcc + totProp))}`;
+  tfoot.appendChild(trTot);
+  table.appendChild(tfoot);
+  contenitore.appendChild(table);
+}
+
+/** Gli stessi due riepiloghi della stampa, visibili in fondo alla pagina. */
+function aggiornaRiepiloghiVideo(dati) {
+  const box = $("#rip-riepiloghi");
+  if (!box) return;
+  box.innerHTML = "";
+
+  const anni = aggregaChiPagaPerAnno(dati).map((g) => ({
+    etichetta: g.anno,
+    occupanti: g.occupanti,
+    proprietaEuro: g.proprietaEuro,
+  }));
+  const proprieta = aggregaChiPagaPerProprieta(dati);
+  if (!anni.length && !proprieta.length) {
+    box.hidden = true;
+    return;
+  }
+
+  box.hidden = false;
+  const boxAnni = el("section", "rip-riepilogo-box");
+  aggiungiTabellaTotali(boxAnni, "Riepilogo per anno", "Anno", anni);
+  box.appendChild(boxAnni);
+
+  const boxProp = el("section", "rip-riepilogo-box");
+  aggiungiTabellaProprietaPerAnno(boxProp, proprieta);
+  box.appendChild(boxProp);
+}
+
+function costruisciSezioneProprieta(contenitore, dati) {
+  const anni = aggregaChiPagaPerAnno(dati).map((g) => ({
+    etichetta: g.anno,
+    occupanti: g.occupanti,
+    proprietaEuro: g.proprietaEuro,
+  }));
+  aggiungiTabellaTotali(contenitore, "Riepilogo per anno", "Anno", anni);
+  aggiungiTabellaProprietaPerAnno(contenitore, aggregaChiPagaPerProprieta(dati));
 }
 
 async function costruisciDocumentoStampa() {
@@ -1208,24 +1548,23 @@ async function costruisciDocumentoStampa() {
   const totSpese = costruisciSezioneSpesePeriodi(box, datiCache || { spese: [] });
 
   const totBox = el("div", "rip-stampa-totale-gen");
-  totBox.innerHTML = `<span>Totale visualizzato</span><strong></strong>`;
-  totBox.querySelector("strong").textContent = `€ ${formatEuro(totSpese)}`;
+  totBox.innerHTML = `
+    <div class="rip-stampa-totale-riga">
+      <span>Totale</span><strong class="tot-unico"></strong>
+    </div>
+    <div class="rip-stampa-totale-riga">
+      <span>Totale occupanti</span><strong class="tot-occ"></strong>
+      <span>Totale proprietà</span><strong class="tot-prop"></strong>
+    </div>
+  `;
+  totBox.querySelector(".tot-unico").textContent = `€ ${formatEuro(
+    arrotondaEuro(totSpese.occupanti + totSpese.proprieta)
+  )}`;
+  totBox.querySelector(".tot-occ").textContent = `€ ${formatEuro(totSpese.occupanti)}`;
+  totBox.querySelector(".tot-prop").textContent = `€ ${formatEuro(totSpese.proprieta)}`;
   titolo.after(totBox);
 
-  let riepilogo;
-  try {
-    riepilogo = await reportRiepilogoRipartizione();
-  } catch (err) {
-    box.appendChild(
-      el(
-        "p",
-        "rip-stampa-vuoto",
-        `Impossibile caricare il riepilogo proprietà: ${String(err)}`
-      )
-    );
-    riepilogo = { unita: [] };
-  }
-  costruisciSezioneProprieta(box, riepilogo.unita || []);
+  costruisciSezioneProprieta(box, datiCache || { spese: [] });
 }
 
 async function stampaRipartizione() {

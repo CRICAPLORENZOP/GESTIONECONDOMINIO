@@ -8,6 +8,8 @@ const STORAGE_OCCUPANTI_MODIFICA = "gestione.occupantiModificaId";
 const STORAGE_UNITA_MODIFICA = "gestione.unitaModificaId";
 const STORAGE_RIPARTO_SPESA = "gestione.ripartoSpesaId";
 const STORAGE_RIPARTO_PROVENIENZA = "gestione.ripartoProvenienza";
+const STORAGE_SPESE_MODIFICA = "gestione.speseModificaId";
+const STORAGE_SPESE_DA_RIPARTO = "gestione.speseDaRipartoId";
 const STORAGE_SPESE_FILTRO_TIPLOGIA = "gestione.speseFiltroTipologiaId";
 const STORAGE_SPESE_FILTRO_STATO = "gestione.speseFiltroStato";
 const STORAGE_ARCHIVIO_RENDICONTO = "gestione.archivioRendicontoDel";
@@ -231,6 +233,13 @@ export async function apriRipartoSpesa(idSpesa, provenienza = "spese") {
   await mostraPagina("riparto");
 }
 
+/** Apre Spese e mostra subito la modifica della spesa indicata. */
+export async function apriModificaSpesa(idSpesa) {
+  sessionStorage.setItem(STORAGE_SPESE_MODIFICA, String(idSpesa));
+  sessionStorage.setItem(STORAGE_SPESE_DA_RIPARTO, String(idSpesa));
+  await mostraPagina("spese");
+}
+
 /** Apre Spese filtrata su una categoria (tipologia). */
 export async function apriSpesePerCategoria(idTipologia) {
   sessionStorage.setItem(STORAGE_SPESE_FILTRO_TIPLOGIA, String(idTipologia));
@@ -241,6 +250,7 @@ export async function apriSpesePerCategoria(idTipologia) {
 window.apriOccupantiPerUnita = apriOccupantiPerUnita;
 window.apriModificaUnita = apriModificaUnita;
 window.apriRipartoSpesa = apriRipartoSpesa;
+window.apriModificaSpesa = apriModificaSpesa;
 window.apriSpesePerCategoria = apriSpesePerCategoria;
 window.mostraPaginaApp = mostraPagina;
 window.STORAGE_OCCUPANTI_UNITA = STORAGE_OCCUPANTI_UNITA;
@@ -248,6 +258,8 @@ window.STORAGE_OCCUPANTI_MODIFICA = STORAGE_OCCUPANTI_MODIFICA;
 window.STORAGE_UNITA_MODIFICA = STORAGE_UNITA_MODIFICA;
 window.STORAGE_RIPARTO_SPESA = STORAGE_RIPARTO_SPESA;
 window.STORAGE_RIPARTO_PROVENIENZA = STORAGE_RIPARTO_PROVENIENZA;
+window.STORAGE_SPESE_MODIFICA = STORAGE_SPESE_MODIFICA;
+window.STORAGE_SPESE_DA_RIPARTO = STORAGE_SPESE_DA_RIPARTO;
 window.STORAGE_SPESE_FILTRO_TIPLOGIA = STORAGE_SPESE_FILTRO_TIPLOGIA;
 window.STORAGE_SPESE_FILTRO_STATO = STORAGE_SPESE_FILTRO_STATO;
 window.STORAGE_ARCHIVIO_RENDICONTO = STORAGE_ARCHIVIO_RENDICONTO;

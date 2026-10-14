@@ -22,6 +22,16 @@ let filtroStato = FILTRO_STATO_DEFAULT;
 /** Quota ricordata quando si sceglie «Entrambi», così non si perde cambiando voce. */
 let quotaEntrambiMemorizzata = 50;
 
+function chiaveDaRiparto() {
+  return window.STORAGE_SPESE_DA_RIPARTO || "gestione.speseDaRipartoId";
+}
+
+function aggiornaPulsanteTornaRiparto() {
+  const btn = $("#btn-torna-ripartizione");
+  if (!btn) return;
+  btn.hidden = !sessionStorage.getItem(chiaveDaRiparto());
+}
+
 function chiaveFiltroTipologia() {
   return window.STORAGE_SPESE_FILTRO_TIPLOGIA || "gestione.speseFiltroTipologiaId";
 }
@@ -618,6 +628,17 @@ export async function onEnter(pageRoot) {
   filtroStato = leggiFiltroStato();
   salvaFiltroStato(filtroStato);
 
+  aggiornaPulsanteTornaRiparto();
+  $("#btn-torna-ripartizione")?.addEventListener("click", () => {
+    const id = Number(sessionStorage.getItem(chiaveDaRiparto()));
+    if (!id) return;
+    const provenienza =
+      sessionStorage.getItem(
+        window.STORAGE_RIPARTO_PROVENIENZA || "gestione.ripartoProvenienza"
+      ) || "spese";
+    window.apriRipartoSpesa?.(id, provenienza);
+  });
+
   $("#btn-nuova-spesa").addEventListener("click", () => apriForm());
   $("#btn-annulla").addEventListener("click", () => chiudiForm());
   $("#cifra").addEventListener("input", aggiornaCampoTotale);
@@ -716,9 +737,28 @@ export async function onEnter(pageRoot) {
   });
 
   await ricaricaLista();
+
+  const keyModifica = window.STORAGE_SPESE_MODIFICA || "gestione.speseModificaId";
+  const rawModifica = sessionStorage.getItem(keyModifica);
+  sessionStorage.removeItem(keyModifica);
+  if (!rawModifica) return;
+
+  const idModifica = Number(rawModifica);
+  try {
+    const lista = await elencoSpese();
+    const daModificare = lista.find((s) => s.idSpesa === idModifica);
+    if (daModificare) {
+      apriForm(daModificare);
+    } else {
+      mostraErrore($("#lista-error"), "Spesa non trovata (forse è stata eliminata).");
+    }
+  } catch (err) {
+    mostraErrore($("#lista-error"), String(err));
+  }
 }
 
 export function onLeave() {
+  sessionStorage.removeItem(chiaveDaRiparto());
   root = null;
   inModificaId = null;
   tipologieCache = [];

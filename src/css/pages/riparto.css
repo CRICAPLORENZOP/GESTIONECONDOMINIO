@@ -124,6 +124,26 @@
   min-width: 0;
 }
 
+.page-riparto .btn-vai-spesa {
+  margin-left: auto;
+  align-self: flex-end;
+  flex-shrink: 0;
+  border: 1px solid #7eb6d9;
+  border-radius: 5px;
+  padding: 0.4rem 0.7rem;
+  background: #cfe8f7;
+  color: #1a4a66;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  cursor: pointer;
+}
+
+.page-riparto .btn-vai-spesa:hover {
+  background: #b7dcf0;
+}
+
 .page-riparto .btn-aiuto {
   width: 1.4rem;
   height: 1.4rem;

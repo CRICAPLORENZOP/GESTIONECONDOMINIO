@@ -626,6 +626,11 @@ export async function onEnter(pageRoot) {
     window.mostraPaginaApp?.("spese");
   });
 
+  $("#btn-vai-spesa")?.addEventListener("click", () => {
+    if (!idSpesa) return;
+    window.apriModificaSpesa?.(idSpesa);
+  });
+
   if (!idSpesa) {
     mostraErrore(
       $("#pagina-error"),
