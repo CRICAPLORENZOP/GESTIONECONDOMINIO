@@ -353,6 +353,10 @@
   color: var(--accent);
 }
 
+.page-spese .piede-non-ripartite {
+  color: #8a4b12;
+}
+
 .page-spese #spese-vuote,
 .page-spese #senza-categorie {
   margin: 0.25rem 0;

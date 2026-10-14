@@ -63,7 +63,10 @@ pub struct ReportGruppoGestione {
 #[derive(Debug, Clone, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct ReportSpeseConteggiate {
+    /// Somma delle sole spese già ripartite (hanno periodi).
     pub totale_generale: f64,
+    /// Somma delle spese attive mai ripartite, con il segno vero.
+    pub totale_non_ripartite: f64,
     pub gruppi: Vec<ReportGruppoGestione>,
 }
 
@@ -211,6 +214,7 @@ fn costruisci_report(conn: &Connection) -> Result<ReportSpeseConteggiate, String
     let totale_generale: f64 = gruppi.iter().map(|g| g.totale).sum();
     Ok(ReportSpeseConteggiate {
         totale_generale,
+        totale_non_ripartite: 0.0,
         gruppi,
     })
 }
@@ -299,6 +303,7 @@ pub fn report_spese_archiviate_per_rendiconto(
     if rendiconto.is_empty() {
         return Ok(ReportSpeseConteggiate {
             totale_generale: 0.0,
+            totale_non_ripartite: 0.0,
             gruppi: Vec::new(),
         });
     }
@@ -434,6 +439,7 @@ fn costruisci_report_archiviato(
     let totale_generale: f64 = gruppi.iter().map(|g| g.totale).sum();
     Ok(ReportSpeseConteggiate {
         totale_generale,
+        totale_non_ripartite: 0.0,
         gruppi,
     })
 }

@@ -93,15 +93,20 @@ function aggiornaPulsantiStato() {
 }
 
 function aggiornaTotaleComplessivo(lista) {
-  const el = $("#totale-complessivo");
+  const elRip = $("#totale-ripartite");
+  const elNon = $("#totale-non-ripartite");
   const piede = $("#piede-spese");
-  if (!el || !piede) return;
+  if (!elRip || !elNon || !piede) return;
 
-  const somma = lista.reduce(
-    (acc, s) => acc + totaleSpesa(s.cifra, s.spesePagamento),
-    0
-  );
-  el.textContent = formatEuro(somma);
+  let ripartite = 0;
+  let nonRipartite = 0;
+  for (const s of lista) {
+    const tot = totaleSpesa(s.cifra, s.spesePagamento);
+    if (s.haPeriodi) ripartite += tot;
+    else nonRipartite += tot;
+  }
+  elRip.textContent = formatEuro(ripartite);
+  elNon.textContent = formatEuro(nonRipartite);
   piede.hidden = lista.length === 0;
 }
 

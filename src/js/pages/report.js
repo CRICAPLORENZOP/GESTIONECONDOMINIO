@@ -108,12 +108,22 @@ function togliFiltroTipologia() {
   if (datiCache) renderReport(datiCache);
 }
 
+function spesaGiaRipartita(spesa) {
+  return (spesa.periodi || []).length > 0;
+}
+
+function sommaSpese(spese, soloRipartite) {
+  return (spese || []).reduce((s, x) => {
+    if (spesaGiaRipartita(x) !== soloRipartite) return s;
+    return s + (Number(x.totale) || 0);
+  }, 0);
+}
+
 /**
- * Applica i filtri gestione/tipologia e ricalcola i totali dei gruppi visibili.
+ * Applica i filtri gestione/tipologia.
+ * I totali di gruppo contano solo le spese già ripartite.
  */
 function datiFiltrati(dati) {
-  if (!haFiltroAttivo()) return dati;
-
   const gruppi = [];
   for (const g of dati.gruppi || []) {
     if (
@@ -133,7 +143,7 @@ function datiFiltrati(dati) {
 
     const tipologieConTotale = tipologie.map((t) => ({
       ...t,
-      totale: (t.spese || []).reduce((s, x) => s + (Number(x.totale) || 0), 0),
+      totale: sommaSpese(t.spese, true),
     }));
     const totaleGestione = tipologieConTotale.reduce(
       (s, t) => s + (Number(t.totale) || 0),
@@ -146,8 +156,14 @@ function datiFiltrati(dati) {
     });
   }
 
-  const totaleGenerale = gruppi.reduce((s, g) => s + (Number(g.totale) || 0), 0);
-  return { totaleGenerale, gruppi };
+  const tutte = gruppi.flatMap((g) =>
+    (g.tipologie || []).flatMap((t) => t.spese || [])
+  );
+  return {
+    totaleGenerale: sommaSpese(tutte, true),
+    totaleNonRipartite: sommaSpese(tutte, false),
+    gruppi,
+  };
 }
 
 function renderReport(datiSorgente) {
@@ -159,7 +175,7 @@ function renderReport(datiSorgente) {
 
   corpo.innerHTML = "";
   aggiornaBannerFiltro();
-  totaleEl.textContent = `€ ${formatEuro(dati.totaleGenerale)}`;
+  if (totaleEl) totaleEl.textContent = `€ ${formatEuro(dati.totaleGenerale)}`;
 
   if (!dati.gruppi?.length) {
     vuoto.hidden = false;
