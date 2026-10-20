@@ -1550,11 +1550,9 @@ async function costruisciDocumentoStampa() {
   const totBox = el("div", "rip-stampa-totale-gen");
   totBox.innerHTML = `
     <div class="rip-stampa-totale-riga">
-      <span>Totale</span><strong class="tot-unico"></strong>
-    </div>
-    <div class="rip-stampa-totale-riga">
       <span>Totale occupanti</span><strong class="tot-occ"></strong>
       <span>Totale proprietà</span><strong class="tot-prop"></strong>
+      <span>Totale</span><strong class="tot-unico"></strong>
     </div>
   `;
   totBox.querySelector(".tot-unico").textContent = `€ ${formatEuro(

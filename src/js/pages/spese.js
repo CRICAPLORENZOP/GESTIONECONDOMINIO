@@ -26,10 +26,20 @@ function chiaveDaRiparto() {
   return window.STORAGE_SPESE_DA_RIPARTO || "gestione.speseDaRipartoId";
 }
 
+function chiaveDaCategorie() {
+  return window.STORAGE_SPESE_DA_CATEGORIE || "gestione.speseDaCategorie";
+}
+
 function aggiornaPulsanteTornaRiparto() {
   const btn = $("#btn-torna-ripartizione");
   if (!btn) return;
   btn.hidden = !sessionStorage.getItem(chiaveDaRiparto());
+}
+
+function aggiornaPulsanteTornaCategorie() {
+  const btn = $("#btn-torna-categorie");
+  if (!btn) return;
+  btn.hidden = sessionStorage.getItem(chiaveDaCategorie()) !== "1";
 }
 
 function chiaveFiltroTipologia() {
@@ -62,7 +72,9 @@ function salvaFiltroStato(stato) {
 
 function togliFiltroTipologia() {
   sessionStorage.removeItem(chiaveFiltroTipologia());
+  sessionStorage.removeItem(chiaveDaCategorie());
   filtroTipologiaId = null;
+  aggiornaPulsanteTornaCategorie();
 }
 
 function applicaFiltroTipologia(idTipologia) {
@@ -622,6 +634,7 @@ async function ricaricaLista() {
 
       corpo.appendChild(tr);
     }
+    await window.aggiornaMenuConteggiate?.();
   } catch (err) {
     mostraErrore($("#lista-error"), String(err));
   }
@@ -634,6 +647,11 @@ export async function onEnter(pageRoot) {
   salvaFiltroStato(filtroStato);
 
   aggiornaPulsanteTornaRiparto();
+  aggiornaPulsanteTornaCategorie();
+  $("#btn-torna-categorie")?.addEventListener("click", () => {
+    sessionStorage.removeItem(chiaveDaCategorie());
+    window.mostraPaginaApp?.("categorie");
+  });
   $("#btn-torna-ripartizione")?.addEventListener("click", () => {
     const id = Number(sessionStorage.getItem(chiaveDaRiparto()));
     if (!id) return;

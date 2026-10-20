@@ -1,4 +1,4 @@
-import { chiudiCondominio, statoCondominio } from "./api.js";
+import { chiudiCondominio, elencoSpese, statoCondominio } from "./api.js";
 import { chiediConferma } from "./conferma.js";
 import { controllaAggiornamenti } from "./aggiornamenti.js";
 import { aggiornaTitoloFinestra, getVersioneApp } from "./versione.js";
@@ -12,7 +12,10 @@ const STORAGE_SPESE_MODIFICA = "gestione.speseModificaId";
 const STORAGE_SPESE_DA_RIPARTO = "gestione.speseDaRipartoId";
 const STORAGE_SPESE_FILTRO_TIPLOGIA = "gestione.speseFiltroTipologiaId";
 const STORAGE_SPESE_FILTRO_STATO = "gestione.speseFiltroStato";
+const STORAGE_SPESE_DA_CATEGORIE = "gestione.speseDaCategorie";
 const STORAGE_ARCHIVIO_RENDICONTO = "gestione.archivioRendicontoDel";
+const STORAGE_APRI_RENDICONTO_RECENTE = "gestione.apriRendicontoRecente";
+const PAGINE_CONTEGGIATE = ["report", "ripartizione", "riepilogo"];
 
 let cssCaricato = null;
 let moduloPagina = null;
@@ -93,6 +96,16 @@ const PAGINE = {
     css: "./css/pages/conguaglio-occupanti.css",
     js: "./pages/conguaglio-occupanti.js",
   },
+  "situazione-pagamenti": {
+    html: "./pages/situazione-pagamenti.html",
+    css: "./css/pages/situazione-pagamenti.css",
+    js: "./pages/situazione-pagamenti.js",
+  },
+  "pagamenti-proprieta": {
+    html: "./pages/pagamenti-proprieta.html",
+    css: "./css/pages/pagamenti-proprieta.css",
+    js: "./pages/pagamenti-proprieta.js",
+  },
 };
 
 function pageRootEl() {
@@ -146,6 +159,24 @@ async function conTimeout(promessa, ms, messaggio) {
   }
 }
 
+/** Spegne i tre menu delle spese conteggiate se non c'è nessuna spesa attiva. */
+async function aggiornaMenuConteggiate() {
+  try {
+    const spese = await elencoSpese();
+    const attive = (spese || []).some(
+      (s) => String(s.stato || "").toUpperCase() === "ATTIVA"
+    );
+    for (const id of PAGINE_CONTEGGIATE) {
+      const btn = document.querySelector(`.nav-item[data-page="${id}"]`);
+      if (!btn) continue;
+      btn.disabled = !attive;
+      btn.title = attive ? "" : "Non ci sono spese attive";
+    }
+  } catch {
+    // Se l'elenco non risponde, i pulsanti restano come sono.
+  }
+}
+
 async function mostraPagina(nome) {
   const pagina = PAGINE[nome];
   if (!pagina) {
@@ -187,6 +218,11 @@ async function mostraPagina(nome) {
       btn.classList.toggle("is-active", btn.dataset.page === "elenco-occupanti");
     });
   }
+  if (nome === "pagamenti-proprieta") {
+    navItems.forEach((btn) => {
+      btn.classList.toggle("is-active", btn.dataset.page === "situazione-pagamenti");
+    });
+  }
 
   const risposta = await fetch(pagina.html);
   if (!risposta.ok) {
@@ -206,6 +242,7 @@ async function mostraPagina(nome) {
   if (typeof moduloPagina?.onEnter === "function") {
     await moduloPagina.onEnter(pageRoot);
   }
+  await aggiornaMenuConteggiate();
 }
 
 /** Apre Occupanti per una unita; se passi idOccupante apre subito la modifica. */
@@ -244,6 +281,7 @@ export async function apriModificaSpesa(idSpesa) {
 export async function apriSpesePerCategoria(idTipologia) {
   sessionStorage.setItem(STORAGE_SPESE_FILTRO_TIPLOGIA, String(idTipologia));
   sessionStorage.setItem(STORAGE_SPESE_FILTRO_STATO, "ATTIVA");
+  sessionStorage.setItem(STORAGE_SPESE_DA_CATEGORIE, "1");
   await mostraPagina("spese");
 }
 
@@ -262,7 +300,9 @@ window.STORAGE_SPESE_MODIFICA = STORAGE_SPESE_MODIFICA;
 window.STORAGE_SPESE_DA_RIPARTO = STORAGE_SPESE_DA_RIPARTO;
 window.STORAGE_SPESE_FILTRO_TIPLOGIA = STORAGE_SPESE_FILTRO_TIPLOGIA;
 window.STORAGE_SPESE_FILTRO_STATO = STORAGE_SPESE_FILTRO_STATO;
+window.STORAGE_SPESE_DA_CATEGORIE = STORAGE_SPESE_DA_CATEGORIE;
 window.STORAGE_ARCHIVIO_RENDICONTO = STORAGE_ARCHIVIO_RENDICONTO;
+window.aggiornaMenuConteggiate = aggiornaMenuConteggiate;
 
 async function avvia() {
   await attendiTauri();
@@ -288,11 +328,19 @@ async function avvia() {
 
   document.querySelectorAll(".nav-item[data-page]").forEach((btn) => {
     btn.addEventListener("click", () => {
+      if (btn.disabled) return;
+      if (
+        btn.dataset.page === "archivio-rendiconti" ||
+        btn.dataset.page === "situazione-pagamenti"
+      ) {
+        sessionStorage.setItem(STORAGE_APRI_RENDICONTO_RECENTE, btn.dataset.page);
+      }
       if (btn.dataset.page === "unita") {
         sessionStorage.removeItem(STORAGE_OCCUPANTI_UNITA);
       }
       if (btn.dataset.page === "spese") {
         sessionStorage.removeItem(STORAGE_SPESE_FILTRO_TIPLOGIA);
+        sessionStorage.removeItem(STORAGE_SPESE_DA_CATEGORIE);
         sessionStorage.setItem(STORAGE_SPESE_FILTRO_STATO, "ATTIVA");
       }
       mostraPagina(btn.dataset.page).catch(mostraErroreAvvio);

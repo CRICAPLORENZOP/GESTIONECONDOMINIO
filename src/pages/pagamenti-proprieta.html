@@ -1,0 +1,72 @@
+<section class="page-pagamenti-proprieta">
+  <div class="page-head page-head-compatto">
+    <button type="button" class="btn btn-ghost" id="btn-torna">
+      ← Pagamenti
+    </button>
+    <div class="page-head-riga">
+      <h1 id="titolo">Versamenti proprietà</h1>
+      <p class="muted" id="sottotitolo"></p>
+    </div>
+    <button type="button" class="btn" id="btn-nuovo">Nuovo versamento</button>
+  </div>
+
+  <p class="form-error" id="pagina-error" hidden></p>
+
+  <div class="panel saldi" id="saldi">
+    <div><span>Dovuto</span><strong id="saldo-dovuto">€ 0,00</strong></div>
+    <div><span>Versato</span><strong id="saldo-versato">€ 0,00</strong></div>
+    <div><span>Saldo</span><strong id="saldo-diff">€ 0,00</strong></div>
+  </div>
+
+  <div class="panel form-panel" id="pannello-form" hidden>
+    <h2 id="titolo-form">Nuovo versamento</h2>
+    <form id="form-pagamento">
+      <input type="hidden" id="id-pagamento" value="" />
+      <div class="form-grid">
+        <label class="field">
+          <span>Data *</span>
+          <input type="date" id="data-versamento" required />
+        </label>
+        <label class="field">
+          <span>Importo (€) *</span>
+          <input type="number" id="importo" step="0.01" value="0" required />
+        </label>
+        <label class="field">
+          <span>Rendiconto</span>
+          <select id="rendiconto">
+            <option value="">— rendiconto attivo —</option>
+          </select>
+        </label>
+        <label class="field field-full">
+          <span>Note</span>
+          <textarea id="note" maxlength="2000" rows="2" placeholder="Es. bonifico, contanti"></textarea>
+        </label>
+      </div>
+      <p class="form-error" id="form-error" hidden></p>
+      <div class="form-actions">
+        <button type="submit" class="btn">Salva</button>
+        <button type="button" class="btn btn-secondary" id="btn-annulla">Annulla</button>
+      </div>
+    </form>
+  </div>
+
+  <div class="panel table-panel">
+    <p class="muted" id="lista-vuota" hidden>
+      Nessun versamento. Puoi registrarne più di uno, anche in date diverse.
+    </p>
+    <div class="table-wrap" id="tabella-wrap">
+      <table class="data-table data-table-compatta">
+        <thead>
+          <tr>
+            <th>Data</th>
+            <th class="num">Importo</th>
+            <th>Rendiconto</th>
+            <th>Note</th>
+            <th class="azioni">Azioni</th>
+          </tr>
+        </thead>
+        <tbody id="corpo"></tbody>
+      </table>
+    </div>
+  </div>
+</section>

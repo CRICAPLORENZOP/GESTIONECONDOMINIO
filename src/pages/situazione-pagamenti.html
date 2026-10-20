@@ -1,0 +1,77 @@
+<section class="page-situazione-pagamenti">
+  <div class="page-head page-head-compatto">
+    <div class="page-head-riga">
+      <h1>Pagamenti</h1>
+      <p class="muted">
+        Due conti separati: occupante e proprietà. Se la stessa persona è entrambe le cose, resta su due righe.
+        Il saldo verde è un credito, il rosso è ancora da pagare.
+      </p>
+    </div>
+    <label class="field field-rendiconto">
+      <span>Rendiconto</span>
+      <select id="rendiconto">
+        <option value="">— rendiconto attivo —</option>
+      </select>
+    </label>
+  </div>
+
+  <p class="form-error" id="pagina-error" hidden></p>
+
+  <h2 class="sez-titolo">Occupanti</h2>
+  <p class="muted" id="vuoto-occupanti" hidden>Nessun occupante corrente.</p>
+  <div class="panel table-panel" id="wrap-occupanti" hidden>
+    <div class="table-wrap">
+      <table class="data-table data-table-compatta">
+        <thead>
+          <tr>
+            <th>Unità</th>
+            <th>Occupante</th>
+            <th class="num">Dovuto</th>
+            <th class="num">Versato</th>
+            <th class="num">Saldo</th>
+            <th class="azioni"></th>
+          </tr>
+        </thead>
+        <tbody id="corpo-occupanti"></tbody>
+        <tfoot>
+          <tr class="riga-totali">
+            <td colspan="2">Totali occupanti</td>
+            <td class="num" id="tot-dovuto-occ">€ 0,00</td>
+            <td class="num" id="tot-versato-occ">€ 0,00</td>
+            <td class="num" id="tot-saldo-occ">€ 0,00</td>
+            <td></td>
+          </tr>
+        </tfoot>
+      </table>
+    </div>
+  </div>
+
+  <h2 class="sez-titolo">Proprietà</h2>
+  <p class="muted" id="vuoto-proprieta" hidden>Nessuna proprietà.</p>
+  <div class="panel table-panel" id="wrap-proprieta" hidden>
+    <div class="table-wrap">
+      <table class="data-table data-table-compatta">
+        <thead>
+          <tr>
+            <th>Proprietà</th>
+            <th class="num">Unità</th>
+            <th class="num">Dovuto</th>
+            <th class="num">Versato</th>
+            <th class="num">Saldo</th>
+            <th class="azioni"></th>
+          </tr>
+        </thead>
+        <tbody id="corpo-proprieta"></tbody>
+        <tfoot>
+          <tr class="riga-totali">
+            <td colspan="2">Totali proprietà</td>
+            <td class="num" id="tot-dovuto-prop">€ 0,00</td>
+            <td class="num" id="tot-versato-prop">€ 0,00</td>
+            <td class="num" id="tot-saldo-prop">€ 0,00</td>
+            <td></td>
+          </tr>
+        </tfoot>
+      </table>
+    </div>
+  </div>
+</section>

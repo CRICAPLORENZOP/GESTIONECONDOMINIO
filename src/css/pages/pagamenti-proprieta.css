@@ -1,0 +1,95 @@
+.page-pagamenti-proprieta .page-head-compatto {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.4rem 0.75rem;
+  margin-bottom: 0.65rem;
+}
+
+.page-pagamenti-proprieta #btn-torna {
+  margin: 0;
+  padding: 0.2rem 0.45rem;
+  font-size: 0.85rem;
+}
+
+.page-pagamenti-proprieta .page-head-riga {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.25rem 0.65rem;
+  min-width: 0;
+  flex: 1;
+}
+
+.page-pagamenti-proprieta .page-head-riga h1 {
+  margin: 0;
+  font-size: 1.3rem;
+  line-height: 1.15;
+}
+
+.page-pagamenti-proprieta .page-head-riga p {
+  margin: 0;
+  font-size: 0.88rem;
+}
+
+.page-pagamenti-proprieta .panel {
+  margin-bottom: 0.65rem;
+  padding: 0.55rem 0.7rem;
+}
+
+.page-pagamenti-proprieta .saldi {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem 0.8rem;
+}
+
+.page-pagamenti-proprieta .saldi div {
+  display: flex;
+  flex-direction: column;
+  min-width: 7rem;
+  padding: 0.25rem 0.55rem;
+  border: 1px solid #e0c43a;
+  border-radius: 6px;
+  background: #ffe566;
+}
+
+.page-pagamenti-proprieta .saldi span {
+  font-size: 0.68rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: var(--ink-muted);
+}
+
+.page-pagamenti-proprieta .saldi strong {
+  font-variant-numeric: tabular-nums;
+}
+
+.page-pagamenti-proprieta .diff-negativa {
+  color: var(--danger);
+}
+
+.page-pagamenti-proprieta .diff-positiva {
+  color: #1a7a3a;
+}
+
+.page-pagamenti-proprieta .form-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(11rem, 1fr));
+  gap: 0.55rem 0.75rem;
+}
+
+.page-pagamenti-proprieta .field-full {
+  grid-column: 1 / -1;
+}
+
+.page-pagamenti-proprieta .btn-piccolo {
+  padding: 0.15rem 0.45rem;
+  font-size: 0.75rem;
+}
+
+.page-pagamenti-proprieta .data-table td.num,
+.page-pagamenti-proprieta .data-table th.num {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}

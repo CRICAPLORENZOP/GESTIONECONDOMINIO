@@ -8,6 +8,7 @@ use tauri::{AppHandle, Manager, State};
 use tauri_plugin_dialog::DialogExt;
 
 mod migrate;
+mod pagamenti;
 mod rate;
 mod report;
 mod riparto;
@@ -1655,6 +1656,7 @@ pub fn run() {
             riparto::aggiorna_quote_periodo,
             report::report_spese_conteggiate,
             report::report_rendiconti_archiviati_opzioni,
+            report::report_rendiconto_archiviato_piu_recente,
             report::report_spese_archiviate_per_rendiconto,
             report::report_ripartizione_archiviati_per_rendiconto,
             report::report_ripartizione_spese_conteggiate,
@@ -1666,6 +1668,11 @@ pub fn run() {
             rate::elimina_rata_condominiale,
             rate::riepilogo_rendiconto_occupante,
             rate::conguaglio_occupanti,
+            pagamenti::situazione_pagamenti,
+            pagamenti::elenco_pagamenti_proprieta,
+            pagamenti::crea_pagamento_proprieta,
+            pagamenti::aggiorna_pagamento_proprieta,
+            pagamenti::elimina_pagamento_proprieta,
             elenco_recenti,
             rimuovi_recente,
             scegli_percorso_salvataggio,

@@ -145,6 +145,11 @@ export async function reportRendicontiArchiviatiOpzioni() {
   return getInvoke()("report_rendiconti_archiviati_opzioni");
 }
 
+/** Nome del rendiconto archiviato più recente, oppure stringa vuota. */
+export async function reportRendicontoArchiviatoPiuRecente() {
+  return getInvoke()("report_rendiconto_archiviato_piu_recente");
+}
+
 export async function reportSpeseArchiviatePerRendiconto(rendicontoDel = "") {
   return getInvoke()("report_spese_archiviate_per_rendiconto", {
     rendicontoDel: rendicontoDel || "",
@@ -199,6 +204,30 @@ export async function conguaglioOccupanti(rendiconto) {
   return getInvoke()("conguaglio_occupanti", {
     rendiconto: rendiconto || "",
   });
+}
+
+export async function situazionePagamenti(rendiconto) {
+  return getInvoke()("situazione_pagamenti", {
+    rendiconto: rendiconto || "",
+  });
+}
+
+export async function elencoPagamentiProprieta(proprieta) {
+  return getInvoke()("elenco_pagamenti_proprieta", {
+    proprieta: proprieta || "",
+  });
+}
+
+export async function creaPagamentoProprieta(dati) {
+  return getInvoke()("crea_pagamento_proprieta", { dati });
+}
+
+export async function aggiornaPagamentoProprieta(idPagamento, dati) {
+  return getInvoke()("aggiorna_pagamento_proprieta", { idPagamento, dati });
+}
+
+export async function eliminaPagamentoProprieta(idPagamento) {
+  return getInvoke()("elimina_pagamento_proprieta", { idPagamento });
 }
 
 export async function elencoRecenti() {

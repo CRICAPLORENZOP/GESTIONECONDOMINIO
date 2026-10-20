@@ -64,6 +64,15 @@
   background: rgba(255, 255, 255, 0.08);
 }
 
+.nav-item:disabled,
+.nav-item:disabled:hover,
+.nav-item.is-active:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+  background: transparent;
+  color: rgba(243, 247, 245, 0.55);
+}
+
 .nav-item.is-active {
   background: rgba(255, 255, 255, 0.16);
   color: #fff;

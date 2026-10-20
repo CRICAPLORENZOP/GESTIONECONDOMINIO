@@ -89,8 +89,10 @@
 
 .page-ripartizione .rip-totale-head {
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
+  flex-wrap: wrap;
   align-items: flex-end;
+  justify-content: flex-end;
   gap: 0.35rem;
 }
 
@@ -375,6 +377,12 @@
   padding: 0.08rem 0.3rem;
   border-bottom: 1px solid #f0f3f5;
   vertical-align: middle;
+}
+
+.page-ripartizione .filtri-riga[hidden],
+.page-ripartizione .filtro-chip[hidden],
+.page-ripartizione .rip-totale-head[hidden] {
+  display: none !important;
 }
 
 .page-ripartizione .filtri-riga {

@@ -1,49 +1,74 @@
-<section class="page-archivio">
-  <div class="archivio-vista">
-    <div class="archivio-vista-head">
-      <div class="archivio-vista-titoli">
-        <h1>Archivio Rendiconti</h1>
-        <p class="muted">
-          Solo periodi con Archivia spuntato. Scegli un «Rendiconto del» per vedere le spese.
-          Stesso layout dell’elenco spese ripartite.
-        </p>
+<section class="page-ripartizione page-archivio">
+  <div class="rip-head">
+    <div class="rip-head-titoli">
+      <h1>Archivio Rendiconti</h1>
+      <p class="muted">
+        Periodi archiviati del rendiconto scelto.
+        Doppio clic su tipologia, proprietà o occupante per filtrare.
+      </p>
+      <div class="filtri-riga" id="filtri-riga" hidden>
+        <div class="filtro-chip" id="filtro-tipologia" hidden>
+          <span class="filtro-chip-lbl">Tipologia</span>
+          <strong id="filtro-tipologia-nome"></strong>
+          <button type="button" class="btn-chip-togli" id="btn-togli-filtro-tipologia" title="Togli filtro tipologia">×</button>
+        </div>
+        <div class="filtro-chip" id="filtro-proprieta" hidden>
+          <span class="filtro-chip-lbl">Proprietà</span>
+          <strong id="filtro-proprieta-nome"></strong>
+          <button type="button" class="btn-chip-togli" id="btn-togli-filtro-proprieta" title="Togli filtro proprietà">×</button>
+        </div>
+        <div class="filtro-chip" id="filtro-occupante" hidden>
+          <span class="filtro-chip-lbl">Occupante</span>
+          <strong id="filtro-occupante-nome"></strong>
+          <button type="button" class="btn-chip-togli" id="btn-togli-filtro-occupante" title="Togli filtro occupante">×</button>
+        </div>
       </div>
-      <div class="archivio-vista-meta">
-        <label class="archivio-filtro-rendiconto">
+    </div>
+    <div class="rip-head-destra">
+      <div class="rip-date-fields">
+        <label class="rip-date-field">
           <span>Rendiconto del</span>
           <select id="filtro-rendiconto">
             <option value="">— Seleziona un rendiconto —</option>
           </select>
         </label>
-        <button type="button" class="btn btn-secondary btn-ripartizione-archivio" id="btn-ripartizione-archivio" disabled>
-          Ripartizione
-        </button>
-        <button type="button" class="btn btn-secondary btn-stampa-archivio" id="btn-stampa-archivio">
-          Stampa
-        </button>
-        <div class="archivio-totale-box" id="totale-generale">€ 0,00</div>
+      </div>
+
+      <div class="rip-head-azioni">
+        <div class="rip-head-azioni-destra">
+          <button type="button" class="btn btn-secondary btn-rip-date" id="btn-stampa-archivio">
+            Stampa
+          </button>
+          <div class="rip-totale-head" id="rip-totale-head" hidden>
+            <div class="rip-totali-doppi">
+              <div class="rip-totale-voce">
+                <span class="rip-totale-lbl">Totale occupanti</span>
+                <strong id="rip-totale-occupanti">€ 0,00</strong>
+              </div>
+              <div class="rip-totale-voce">
+                <span class="rip-totale-lbl">Totale proprietà</span>
+                <strong id="rip-totale-proprieta">€ 0,00</strong>
+              </div>
+              <div class="rip-totale-voce rip-totale-unico">
+                <span class="rip-totale-lbl">Totale</span>
+                <strong id="rip-totale-unico">€ 0,00</strong>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
-
-    <div class="archivio-stampa-intestazione" aria-hidden="true">
-      <strong id="archivio-stampa-condo"></strong>
-      <span id="archivio-stampa-data"></span>
-    </div>
-
-    <p class="form-error" id="archivio-error" hidden></p>
-    <p class="muted" id="archivio-vuoto">
-      Seleziona un rendiconto nell’elenco in alto per vedere i dati.
-    </p>
-
-    <div class="archivio-colonne" id="archivio-colonne" hidden>
-      <span>Genere</span>
-      <span>Emissione</span>
-      <span>Periodo da</span>
-      <span>Periodo a</span>
-      <span class="num">Giorni</span>
-      <span class="num">Importo</span>
-    </div>
-
-    <div id="archivio-corpo"></div>
   </div>
+
+  <p class="form-error" id="rip-error" hidden></p>
+  <p class="muted" id="rip-vuoto">
+    Seleziona un rendiconto nell’elenco in alto per vedere le quote.
+  </p>
+
+  <div id="rip-corpo"></div>
+
+  <div id="rip-riepiloghi" class="rip-riepiloghi" hidden></div>
+
+  <!-- Solo per stampa/PDF (nascosto a schermo) -->
+  <div id="rip-stampa" class="rip-stampa" hidden aria-hidden="true"></div>
 </section>

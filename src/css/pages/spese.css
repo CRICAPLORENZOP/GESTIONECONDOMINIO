@@ -39,7 +39,8 @@
   gap: 0.45rem 0.65rem;
 }
 
-.page-spese #btn-torna-ripartizione {
+.page-spese #btn-torna-ripartizione,
+.page-spese #btn-torna-categorie {
   margin: 0;
 }
 

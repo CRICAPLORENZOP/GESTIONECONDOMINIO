@@ -38,6 +38,7 @@ function formatNum(valore) {
 }
 
 function apriRateOccupante(idOccupante) {
+  sessionStorage.removeItem("gestione.pagamentiRitorno");
   sessionStorage.setItem(STORAGE_RATE_OCCUPANTE, String(idOccupante));
   window.mostraPaginaApp?.("rate-occupante");
 }

@@ -11,7 +11,7 @@
 use rusqlite::{Connection, OptionalExtension, params};
 
 /// Versione attuale dello schema. Aumentala quando cambi le tabelle.
-pub const SCHEMA_VERSION: i32 = 16;
+pub const SCHEMA_VERSION: i32 = 17;
 
 pub fn leggi_versione(conn: &Connection) -> Result<i32, String> {
     let valore: Option<String> = conn
@@ -145,6 +145,15 @@ pub fn crea_schema_attuale(conn: &Connection) -> Result<(), String> {
             Rendiconto TEXT NOT NULL DEFAULT '',
             FOREIGN KEY (IdOccupante) REFERENCES occupante(IdOccupante) ON DELETE CASCADE
         );
+
+        CREATE TABLE IF NOT EXISTS pagamento_proprieta (
+            IdPagamento INTEGER PRIMARY KEY AUTOINCREMENT,
+            Proprieta TEXT NOT NULL DEFAULT '',
+            DataVersamento TEXT NOT NULL,
+            Importo REAL NOT NULL DEFAULT 0,
+            NotePagamento TEXT NOT NULL DEFAULT '',
+            Rendiconto TEXT NOT NULL DEFAULT ''
+        );
         ",
     )
     .map_err(|e| format!("Errore creazione tabelle: {e}"))?;
@@ -206,6 +215,7 @@ fn applica_migrazione(conn: &Connection, verso: i32) -> Result<(), String> {
         14 => migrate_to_14(conn),
         15 => migrate_to_15(conn),
         16 => migrate_to_16(conn),
+        17 => migrate_to_17(conn),
         altra => Err(format!("Migrazione verso la versione {altra} non definita.")),
     }
 }
@@ -468,6 +478,24 @@ fn migrate_to_15(conn: &Connection) -> Result<(), String> {
         ",
     )
     .map_err(|e| format!("Creazione tabella rate_condominiali fallita: {e}"))?;
+    Ok(())
+}
+
+/// Versione 17: versamenti della proprietà (più pagamenti per lo stesso nome).
+fn migrate_to_17(conn: &Connection) -> Result<(), String> {
+    conn.execute_batch(
+        "
+        CREATE TABLE IF NOT EXISTS pagamento_proprieta (
+            IdPagamento INTEGER PRIMARY KEY AUTOINCREMENT,
+            Proprieta TEXT NOT NULL DEFAULT '',
+            DataVersamento TEXT NOT NULL,
+            Importo REAL NOT NULL DEFAULT 0,
+            NotePagamento TEXT NOT NULL DEFAULT '',
+            Rendiconto TEXT NOT NULL DEFAULT ''
+        );
+        ",
+    )
+    .map_err(|e| format!("Creazione tabella pagamento_proprieta fallita: {e}"))?;
     Ok(())
 }
 

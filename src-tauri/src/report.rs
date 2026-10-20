@@ -292,6 +292,33 @@ pub fn report_rendiconti_archiviati_opzioni(
     })
 }
 
+/// Il rendiconto archiviato con il periodo più recente.
+/// Se due rendiconti finiscono lo stesso giorno, vince quello archiviato per ultimo.
+#[tauri::command]
+pub fn report_rendiconto_archiviato_piu_recente(
+    state: State<AppState>,
+) -> Result<String, String> {
+    with_db(&state, |conn, _info| {
+        let mut stmt = conn
+            .prepare(
+                "SELECT TRIM(p.RendicontoDel)
+                 FROM periodo_spesa p
+                 WHERE p.Archivia != 0
+                   AND TRIM(COALESCE(p.RendicontoDel, '')) != ''
+                 GROUP BY TRIM(p.RendicontoDel) COLLATE NOCASE
+                 ORDER BY MAX(p.PeriodoA) DESC, MAX(p.IdPeriodo) DESC
+                 LIMIT 1",
+            )
+            .map_err(|e| e.to_string())?;
+        let mut rows = stmt.query([]).map_err(|e| e.to_string())?;
+        if let Some(row) = rows.next().map_err(|e| e.to_string())? {
+            row.get(0).map_err(|e| e.to_string())
+        } else {
+            Ok(String::new())
+        }
+    })
+}
+
 /// Stesso layout dell’elenco spese ripartite, ma solo periodi archiviati
 /// con «Rendiconto del» uguale al valore scelto.
 #[tauri::command]

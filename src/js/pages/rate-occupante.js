@@ -226,9 +226,18 @@ export async function onEnter(pageRoot) {
   const raw = sessionStorage.getItem(STORAGE_RATE_OCCUPANTE);
   idOccupante = raw ? Number(raw) : null;
 
-  $("#btn-torna-occupanti").addEventListener("click", () => {
+  const tornaPagamenti =
+    sessionStorage.getItem("gestione.pagamentiRitorno") === "situazione-pagamenti";
+  const btnTorna = $("#btn-torna-occupanti");
+  if (tornaPagamenti && btnTorna) btnTorna.textContent = "← Pagamenti";
+  btnTorna?.addEventListener("click", () => {
     sessionStorage.removeItem(STORAGE_RATE_OCCUPANTE);
-    window.mostraPaginaApp?.("elenco-occupanti");
+    const destinazione =
+      sessionStorage.getItem("gestione.pagamentiRitorno") === "situazione-pagamenti"
+        ? "situazione-pagamenti"
+        : "elenco-occupanti";
+    sessionStorage.removeItem("gestione.pagamentiRitorno");
+    window.mostraPaginaApp?.(destinazione);
   });
 
   if (!idOccupante) {
